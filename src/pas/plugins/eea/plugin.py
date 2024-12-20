@@ -27,6 +27,7 @@ _marker = {}
 
 MS_TOKEN_CACHE: dict | None = None
 
+
 def manage_addEEAEntraPlugin(context, id, title="", RESPONSE=None, **kw):
     """Create an instance of an EEA Plugin."""
     plugin = EEAEntraPlugin(id, title, **kw)

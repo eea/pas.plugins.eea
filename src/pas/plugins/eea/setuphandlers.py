@@ -2,7 +2,6 @@
 from plone.base.interfaces import INonInstallable
 from zope.interface import implementer
 
-from pas.plugins.authomatic.setuphandlers import post_install as authomatic_post_install
 from .interfaces import DEFAULT_ID
 from .plugin import EEAEntraPlugin
 

@@ -3,4 +3,4 @@
 from zope.i18nmessageid import MessageFactory
 
 
-_ = MessageFactory('pas.plugins.eea')
+_ = MessageFactory("pas.plugins.eea")

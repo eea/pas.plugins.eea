@@ -16,7 +16,6 @@ jobs:
             fail-fast: false
             matrix:
                 plone-version:
-                  - 'Plone52'
                   - 'Plone60'
                 python-version: [3.12]
 
