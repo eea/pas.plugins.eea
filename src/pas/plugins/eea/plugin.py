@@ -11,10 +11,9 @@ from Products.PlonePAS.interfaces.group import IGroupManagement
 from Products.PlonePAS.plugins.autogroup import VirtualGroup
 from Products.PluggableAuthService.interfaces import plugins as pas_interfaces
 from Products.PluggableAuthService.plugins.BasePlugin import BasePlugin
+from pas.plugins.authomatic.utils import authomatic_cfg
 from plone.memoize import ram
 from zope.interface import implementer
-
-from pas.plugins.authomatic.utils import authomatic_cfg
 
 logging.basicConfig(level=logging.DEBUG)
 reqlogger = logging.getLogger("urllib3")
@@ -116,23 +115,36 @@ class EEAEntraPlugin(BasePlugin):
             return MS_TOKEN_CACHE["access_token"]
 
     @security.private
-    @ram.cache(_cachekey_ms_users)
-    def queryMSApiUsers(self, login=""):
-        pluginid = self.getId()
+    def queryApiEndpoint(self, url, consistent=True, extra_headers=None):
         token = self._getMSAccessToken()
 
-        url = (
-            f"https://graph.microsoft.com/v1.0/users/{login}"
-            if login
-            else "https://graph.microsoft.com/v1.0/users"
-        )
         headers = {
             "Authorization": f"Bearer {token}",
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
 
+        if not consistent:
+            headers["ConsistencyLevel"] = "eventual"
+
+        if extra_headers:
+            headers.update(extra_headers)
+
         response = requests.get(url, headers=headers)
+        return response
+
+    @security.private
+    @ram.cache(_cachekey_ms_users)
+    def queryMSApiUsers(self, login=""):
+        pluginid = self.getId()
+
+        url = (
+            f"https://graph.microsoft.com/v1.0/users/{login}"
+            if login
+            else "https://graph.microsoft.com/v1.0/users"
+        )
+
+        response = self.queryApiEndpoint(url)
 
         if response.status_code == 200:
             users = response.json()
@@ -148,41 +160,36 @@ class EEAEntraPlugin(BasePlugin):
     @ram.cache(_cachekey_ms_users_inconsistent)
     def queryMSApiUsersInconsistently(self, query="", properties=None):
         pluginid = self.getId()
-        token = self._getMSAccessToken()
 
-        customQuery = ""
+        url = "https://graph.microsoft.com/v1.0/users"
+
+        custom_query = ""
 
         if not properties and query:
-            customQuery = f"displayName:{query}"
+            custom_query = f"displayName:{query}"
 
         if properties and properties.get("fullname"):
-            customQuery = f"displayName:{properties.get('fullname')}"
+            custom_query = f"displayName:{properties.get('fullname')}"
 
         elif properties and properties.get("email"):
-            customQuery = f"mail:{properties.get('email')}"
+            custom_query = f"mail:{properties.get('email')}"
 
-        if customQuery:
-            url = f'https://graph.microsoft.com/v1.0/users?$search="{customQuery}"'
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "ConsistencyLevel": "eventual",
-            }
+        if custom_query:
+            url = f'{url}?$search="{custom_query}"'
 
-            response = requests.get(url, headers=headers)
+        response = self.queryApiEndpoint(url, consistent=False)
 
-            if response.status_code == 200:
-                users = response.json()
-                users = users.get("value", [users])
-                return [
-                    {
-                        "login": user["displayName"],
-                        "id": user["id"],
-                        "pluginid": pluginid,
-                    }
-                    for user in users
-                ]
+        if response.status_code == 200:
+            users = response.json()
+            users = users.get("value", [users])
+            return [
+                {
+                    "login": user["displayName"],
+                    "id": user["id"],
+                    "pluginid": pluginid,
+                }
+                for user in users
+            ]
 
         return []
 
@@ -266,16 +273,9 @@ class EEAEntraPlugin(BasePlugin):
     @security.private
     @ram.cache(_cachekey_ms_groups_for_principal)
     def getGroupsForPrincipal(self, principal, *args, **kwargs):
-        token = self._getMSAccessToken()
-
         url = f"https://graph.microsoft.com/v1.0/users/{principal.getId()}/memberOf/microsoft.graph.group"
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
 
-        response = requests.get(url, headers=headers)
+        response = self.queryApiEndpoint(url)
 
         if response.status_code == 200:
             groups = response.json()
@@ -286,16 +286,9 @@ class EEAEntraPlugin(BasePlugin):
 
     @security.private
     def getGroupMembers(self, group_id):
-        token = self._getMSAccessToken()
-
         url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members"
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
 
-        response = requests.get(url, headers=headers)
+        response = self.queryApiEndpoint(url)
 
         if response.status_code == 200:
             users = response.json()
@@ -308,20 +301,14 @@ class EEAEntraPlugin(BasePlugin):
     @ram.cache(_cachekey_ms_groups)
     def queryMSApiGroups(self, group_id=""):
         pluginid = self.getId()
-        token = self._getMSAccessToken()
 
         url = (
             f"https://graph.microsoft.com/v1.0/groups/{group_id}"
             if group_id
             else "https://graph.microsoft.com/v1.0/groups"
         )
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
 
-        response = requests.get(url, headers=headers)
+        response = self.queryApiEndpoint(url)
 
         if response.status_code == 200:
             groups = response.json()
@@ -342,7 +329,6 @@ class EEAEntraPlugin(BasePlugin):
     @ram.cache(_cachekey_ms_groups_inconsistent)
     def queryMSApiGroupsInconsistently(self, query="", properties=None):
         pluginid = self.getId()
-        token = self._getMSAccessToken()
 
         customQuery = ""
 
@@ -354,14 +340,8 @@ class EEAEntraPlugin(BasePlugin):
 
         if customQuery:
             url = f'https://graph.microsoft.com/v1.0/groups?$search="{customQuery}"'
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "ConsistencyLevel": "eventual",
-            }
 
-            response = requests.get(url, headers=headers)
+            response = self.queryApiEndpoint(url, consistent=False)
 
             if response.status_code == 200:
                 groups = response.json()

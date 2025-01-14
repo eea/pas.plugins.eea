@@ -11,6 +11,15 @@
       layer="pas.plugins.eea.interfaces.IPasPluginsEeaLayer"
       />
 
+
+  <browser:page
+    for="*"
+    name="pas_plugins_eea_user_sync"
+    class=".user_sync.UserSyncForm"
+    permission="cmf.ManagePortal"
+    layer="pas.plugins.eea.interfaces.IPasPluginsEeaLayer"
+    />
+
   <!-- Publish static files -->
   <plone:static
       name="pas.plugins.eea"
