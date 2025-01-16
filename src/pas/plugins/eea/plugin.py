@@ -1,4 +1,5 @@
 import logging
+import uuid
 from pathlib import Path
 from time import time
 
@@ -9,11 +10,16 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.PlonePAS.interfaces.group import IGroupIntrospection
 from Products.PlonePAS.interfaces.group import IGroupManagement
 from Products.PlonePAS.plugins.autogroup import VirtualGroup
+from Products.PluggableAuthService.UserPropertySheet import UserPropertySheet
 from Products.PluggableAuthService.interfaces import plugins as pas_interfaces
 from Products.PluggableAuthService.plugins.BasePlugin import BasePlugin
+from pas.plugins.authomatic.useridentities import UserIdentities
 from pas.plugins.authomatic.utils import authomatic_cfg
 from plone.memoize import ram
 from zope.interface import implementer
+
+from pas.plugins.eea.utils import get_authomatic_plugin
+from pas.plugins.eea.utils import get_provider_name
 
 logging.basicConfig(level=logging.DEBUG)
 reqlogger = logging.getLogger("urllib3")
@@ -42,24 +48,10 @@ manage_addEEAEntraPluginForm = PageTemplateFile(
 )
 
 
-def _cachekey_ms_users(method, self, login):
-    return time() // (60 * 60), login
-
-
-def _cachekey_ms_users_inconsistent(method, self, query, properties):
-    return time() // (60 * 60), query, properties.items() if properties else None
-
-
-def _cachekey_ms_groups(method, self, group_id):
-    return time() // (60 * 60), group_id
-
-
-def _cachekey_ms_groups_inconsistent(method, self, query, properties):
-    return time() // (60 * 60), query, properties.items() if properties else None
-
-
-def _cachekey_ms_groups_for_principal(method, self, principal, *args, **kwargs):
-    return time() // (60 * 60), principal.getId()
+def _cachekey_query_api_endpoint(method, self, url, consistent=None,
+                                 extra_headers=None):
+    headers = tuple(extra_headers.items()) if extra_headers else None
+    return time() // (60 * 60), url, consistent, headers
 
 
 @implementer(
@@ -91,7 +83,8 @@ class EEAEntraPlugin(BasePlugin):
             return MS_TOKEN_CACHE["access_token"]
 
         settings = authomatic_cfg()
-        cfg = settings.get("microsoft", {}) if settings else {}
+        provider_name = get_provider_name(settings)
+        cfg = settings.get(provider_name, {}) if settings else {}
         domain = cfg.get("domain")
 
         if domain:
@@ -115,6 +108,7 @@ class EEAEntraPlugin(BasePlugin):
             return MS_TOKEN_CACHE["access_token"]
 
     @security.private
+    @ram.cache(_cachekey_query_api_endpoint)
     def queryApiEndpoint(self, url, consistent=True, extra_headers=None):
         token = self._getMSAccessToken()
 
@@ -133,8 +127,16 @@ class EEAEntraPlugin(BasePlugin):
         response = requests.get(url, headers=headers)
         return response
 
+    def queryApiEndpointGetAll(self, url, *args, **kwargs):
+        resp = self.queryApiEndpoint(url, *args, **kwargs)
+        if resp.status_code == 200:
+            data = resp.json()
+            yield from data.get('value', [data])
+            # next_url = data.get("@odata.nextLink")
+            # if next_url:
+            #     yield from self.queryApiEndpointGetAll(next_url, *args, **kwargs)
+
     @security.private
-    @ram.cache(_cachekey_ms_users)
     def queryMSApiUsers(self, login=""):
         pluginid = self.getId()
 
@@ -144,20 +146,20 @@ class EEAEntraPlugin(BasePlugin):
             else "https://graph.microsoft.com/v1.0/users"
         )
 
-        response = self.queryApiEndpoint(url)
+        users = self.queryApiEndpointGetAll(url)
 
-        if response.status_code == 200:
-            users = response.json()
-            users = users.get("value", [users])
-            return [
-                {"login": user["displayName"], "id": user["id"], "pluginid": pluginid}
-                for user in users
-            ]
-
-        return []
+        return [
+            {
+                "login": user["displayName"],
+                "id": user["id"],
+                "pluginid": pluginid,
+                "fullname": user["displayName"],
+                "email": user.get("email", user["userPrincipalName"])
+            }
+            for user in users
+        ]
 
     @security.private
-    @ram.cache(_cachekey_ms_users_inconsistent)
     def queryMSApiUsersInconsistently(self, query="", properties=None):
         pluginid = self.getId()
 
@@ -177,21 +179,38 @@ class EEAEntraPlugin(BasePlugin):
         if custom_query:
             url = f'{url}?$search="{custom_query}"'
 
-        response = self.queryApiEndpoint(url, consistent=False)
+        users = self.queryApiEndpointGetAll(url, consistent=False)
 
-        if response.status_code == 200:
-            users = response.json()
-            users = users.get("value", [users])
-            return [
-                {
-                    "login": user["displayName"],
-                    "id": user["id"],
-                    "pluginid": pluginid,
-                }
-                for user in users
-            ]
+        return [
+            {
+                "login": user["displayName"],
+                "id": user["id"],
+                "pluginid": pluginid,
+                "fullname": user["displayName"],
+                "email": user.get("email", user["userPrincipalName"])
+            }
+            for user in users
+        ]
 
-        return []
+    def rememberUsers(self, users):
+        authomatic_plugin = get_authomatic_plugin()
+        provider_name = get_provider_name(authomatic_cfg())
+        known_identities = authomatic_plugin._userid_by_identityinfo
+
+        for user in users:
+            user_key = (provider_name, user["id"])
+
+            if known_identities.get(user_key):
+                continue
+
+            userid = str(uuid.uuid4())
+            useridentities = UserIdentities(userid)
+            useridentities._sheet = UserPropertySheet(
+                {"fullname": user["fullname"], "email": user["email"]})
+            authomatic_plugin._useridentities_by_userid[userid] = useridentities
+            authomatic_plugin._userid_by_identityinfo[user_key] = userid
+
+        return users
 
     @security.private
     def queryMSApiUsersEndpoint(self, login="", exact=False, **properties):
@@ -218,7 +237,8 @@ class EEAEntraPlugin(BasePlugin):
         if search_id and not isinstance(search_id, str):
             raise NotImplementedError("sequence is not supported.")
 
-        return self.queryMSApiUsersEndpoint(search_id, exact_match, **kw)
+        return self.rememberUsers(
+            self.queryMSApiUsersEndpoint(search_id, exact_match, **kw))
 
     @security.private
     def addGroup(self, *args, **kw):
@@ -247,7 +267,8 @@ class EEAEntraPlugin(BasePlugin):
 
     @security.private
     def setRolesForGroup(self, group_id, roles=()):
-        rmanagers = self._getPlugins().listPlugins(pas_interfaces.IRoleAssignerPlugin)
+        rmanagers = self._getPlugins().listPlugins(
+            pas_interfaces.IRoleAssignerPlugin)
         if not (rmanagers):
             raise NotImplementedError(
                 "There is no plugin that can assign roles to groups"
@@ -271,34 +292,18 @@ class EEAEntraPlugin(BasePlugin):
         return [group["id"] for group in self.queryMSApiGroups("")]
 
     @security.private
-    @ram.cache(_cachekey_ms_groups_for_principal)
     def getGroupsForPrincipal(self, principal, *args, **kwargs):
         url = f"https://graph.microsoft.com/v1.0/users/{principal.getId()}/memberOf/microsoft.graph.group"
-
-        response = self.queryApiEndpoint(url)
-
-        if response.status_code == 200:
-            groups = response.json()
-            groups = groups.get("value", [])
-            return [group["id"] for group in groups]
-
-        return []
+        groups = self.queryApiEndpointGetAll(url)
+        return [group["id"] for group in groups]
 
     @security.private
     def getGroupMembers(self, group_id):
         url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members"
-
-        response = self.queryApiEndpoint(url)
-
-        if response.status_code == 200:
-            users = response.json()
-            users = users.get("value", [])
-            return [user["id"] for user in users]
-
-        return []
+        users = self.queryApiEndpointGetAll(url)
+        return [user["id"] for user in users]
 
     @security.private
-    @ram.cache(_cachekey_ms_groups)
     def queryMSApiGroups(self, group_id=""):
         pluginid = self.getId()
 
@@ -308,26 +313,20 @@ class EEAEntraPlugin(BasePlugin):
             else "https://graph.microsoft.com/v1.0/groups"
         )
 
-        response = self.queryApiEndpoint(url)
-
-        if response.status_code == 200:
-            groups = response.json()
-            groups = groups.get("value", [groups])
-            return [
-                {
-                    "title": group["displayName"],
-                    "id": group["id"],
-                    "groupid": group["id"],
-                    "pluginid": pluginid,
-                }
-                for group in groups
-            ]
-
-        return []
+        groups = self.queryApiEndpointGetAll(url)
+        return [
+            {
+                "title": group["displayName"],
+                "id": group["id"],
+                "groupid": group["id"],
+                "pluginid": pluginid,
+            }
+            for group in groups
+        ]
 
     @security.private
-    @ram.cache(_cachekey_ms_groups_inconsistent)
     def queryMSApiGroupsInconsistently(self, query="", properties=None):
+        groups = []
         pluginid = self.getId()
 
         customQuery = ""
@@ -340,23 +339,17 @@ class EEAEntraPlugin(BasePlugin):
 
         if customQuery:
             url = f'https://graph.microsoft.com/v1.0/groups?$search="{customQuery}"'
+            groups = self.queryApiEndpointGetAll(url, consistent=False)
 
-            response = self.queryApiEndpoint(url, consistent=False)
-
-            if response.status_code == 200:
-                groups = response.json()
-                groups = groups.get("value", [groups])
-                return [
-                    {
-                        "title": group["displayName"],
-                        "id": group["id"],
-                        "groupid": group["id"],
-                        "pluginid": pluginid,
-                    }
-                    for group in groups
-                ]
-
-        return []
+        return [
+            {
+                "title": group["displayName"],
+                "id": group["id"],
+                "groupid": group["id"],
+                "pluginid": pluginid,
+            }
+            for group in groups
+        ]
 
     @security.private
     def queryMSApiGroupsEndpoint(self, query="", exact=False, **properties):
@@ -369,17 +362,6 @@ class EEAEntraPlugin(BasePlugin):
     def enumerateGroups(
         self, id=None, exact_match=False, sort_by=None, max_results=None, **kw
     ):
-        from pprint import pprint
-
-        pprint(
-            {
-                "id": id,
-                "exact_match": exact_match,
-                "kw": kw,
-                "sort_by": sort_by,
-                "max_results": max_results,
-            }
-        )
         return self.queryMSApiGroupsEndpoint(id, exact_match, **kw)
 
 
