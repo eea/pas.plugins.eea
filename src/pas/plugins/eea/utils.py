@@ -1,16 +1,14 @@
 from pas.plugins.authomatic.interfaces import DEFAULT_ID as DEFAULT_AUTHOMATIC_ID
-from pas.plugins.authomatic.plugin import AuthomaticPlugin
 from plone import api
 
 from .interfaces import DEFAULT_ID
-from .plugin import EEAEntraPlugin
 
 
-def get_plugin() -> EEAEntraPlugin:
+def get_plugin() -> 'pas.plugins.eea.plugin.EEAEntraPlugin':
     return api.portal.get().acl_users.get(DEFAULT_ID)
 
 
-def get_authomatic_plugin() -> AuthomaticPlugin:
+def get_authomatic_plugin() -> 'pas.plugins.authomatic.plugin.AuthomaticPlugin':
     return api.portal.get().acl_users.get(DEFAULT_AUTHOMATIC_ID)
 
 

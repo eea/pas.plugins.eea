@@ -1,5 +1,6 @@
 import logging
 import uuid
+from dataclasses import dataclass
 from pathlib import Path
 from time import time
 
@@ -14,8 +15,12 @@ from Products.PluggableAuthService.UserPropertySheet import UserPropertySheet
 from Products.PluggableAuthService.interfaces import plugins as pas_interfaces
 from Products.PluggableAuthService.plugins.BasePlugin import BasePlugin
 from pas.plugins.authomatic.useridentities import UserIdentities
+from pas.plugins.authomatic.useridentities import UserIdentity
 from pas.plugins.authomatic.utils import authomatic_cfg
+from plone import api
 from plone.memoize import ram
+from plone.protect.interfaces import IDisableCSRFProtection
+from zope.interface import alsoProvides
 from zope.interface import implementer
 
 from pas.plugins.eea.utils import get_authomatic_plugin
@@ -48,10 +53,33 @@ manage_addEEAEntraPluginForm = PageTemplateFile(
 )
 
 
-def _cachekey_query_api_endpoint(method, self, url, consistent=None,
-                                 extra_headers=None):
+def _cachekey_query_api_endpoint(
+    method, self, url, consistent=None, extra_headers=None, session=None
+):
     headers = tuple(extra_headers.items()) if extra_headers else None
-    return time() // (60 * 60), url, consistent, headers
+    return time() // (60 * 60), url, consistent, headers, bool(session)
+
+
+@dataclass
+class MockProvider:
+    name: str
+
+
+@dataclass
+class MockUser:
+    user: dict
+
+    def to_dict(self):
+        return self.user
+
+
+class MockAuthResult:
+    provider: MockProvider
+    user: MockUser
+
+    def __init__(self, provider: str, user: dict):
+        self.provider = MockProvider(provider)
+        self.user = MockUser(user)
 
 
 @implementer(
@@ -88,7 +116,9 @@ class EEAEntraPlugin(BasePlugin):
         domain = cfg.get("domain")
 
         if domain:
-            url = f"https://login.microsoftonline.com/{domain}/oauth2/v2.0/token"
+            url = (
+                f"https://login.microsoftonline.com/{domain}/oauth2/v2.0/token"
+            )
             headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
             data = {
@@ -98,18 +128,19 @@ class EEAEntraPlugin(BasePlugin):
                 "scope": "https://graph.microsoft.com/.default",
             }
 
-            # TODO: maybe do this with authomatic somehow? (perhaps extend the default plugin?)
             response = requests.post(url, headers=headers, data=data)
             token_data = response.json()
 
-            # TODO: cache this and refresh when necessary
-            MS_TOKEN_CACHE = {"expires": time() + token_data["expires_in"] - 60}
+            MS_TOKEN_CACHE = {
+                "expires": time() + token_data["expires_in"] - 60
+            }
             MS_TOKEN_CACHE.update(token_data)
             return MS_TOKEN_CACHE["access_token"]
 
     @security.private
     @ram.cache(_cachekey_query_api_endpoint)
-    def queryApiEndpoint(self, url, consistent=True, extra_headers=None):
+    def queryApiEndpoint(self, url, consistent=True, extra_headers=None,
+                         session: requests.Session = None):
         token = self._getMSAccessToken()
 
         headers = {
@@ -124,17 +155,21 @@ class EEAEntraPlugin(BasePlugin):
         if extra_headers:
             headers.update(extra_headers)
 
-        response = requests.get(url, headers=headers)
+        requester = session if session else requests
+        response = requester.get(url, headers=headers)
+
         return response
 
     def queryApiEndpointGetAll(self, url, *args, **kwargs):
         resp = self.queryApiEndpoint(url, *args, **kwargs)
         if resp.status_code == 200:
             data = resp.json()
-            yield from data.get('value', [data])
-            # next_url = data.get("@odata.nextLink")
-            # if next_url:
-            #     yield from self.queryApiEndpointGetAll(next_url, *args, **kwargs)
+            yield from data.get("value", [data])
+            next_url = data.get("@odata.nextLink")
+            if next_url:
+                yield from self.queryApiEndpointGetAll(
+                    next_url, *args, **kwargs
+                )
 
     @security.private
     def queryMSApiUsers(self, login=""):
@@ -154,7 +189,7 @@ class EEAEntraPlugin(BasePlugin):
                 "id": user["id"],
                 "pluginid": pluginid,
                 "fullname": user["displayName"],
-                "email": user.get("email", user["userPrincipalName"])
+                "email": user.get("email", user["userPrincipalName"]),
             }
             for user in users
         ]
@@ -187,35 +222,62 @@ class EEAEntraPlugin(BasePlugin):
                 "id": user["id"],
                 "pluginid": pluginid,
                 "fullname": user["displayName"],
-                "email": user.get("email", user["userPrincipalName"])
+                "email": user.get("email", user["userPrincipalName"]),
             }
             for user in users
         ]
 
+    def getServiceUuid(self, plone_uuid):
+        authomatic_plugin = get_authomatic_plugin()
+        provider_name = get_provider_name(authomatic_cfg())
+        plone_uuid_to_provider_uuid = {
+            v: provider_uuid
+            for (name, provider_uuid), v
+            in authomatic_plugin._userid_by_identityinfo.items()
+            if name == provider_name
+        }
+        return plone_uuid_to_provider_uuid.get(plone_uuid, plone_uuid)
+
     def rememberUsers(self, users):
+        alsoProvides(api.env.getRequest(), IDisableCSRFProtection)
+
         authomatic_plugin = get_authomatic_plugin()
         provider_name = get_provider_name(authomatic_cfg())
         known_identities = authomatic_plugin._userid_by_identityinfo
 
         for user in users:
             user_key = (provider_name, user["id"])
+            plone_uuid = known_identities.get(user_key)
 
-            if known_identities.get(user_key):
+            if plone_uuid:
+                # replace provider id with internal plone uuid
+                user["id"] = plone_uuid
                 continue
 
             userid = str(uuid.uuid4())
             useridentities = UserIdentities(userid)
+            useridentities._identities[provider_name] = UserIdentity(
+                MockAuthResult(provider_name, user)
+            )
             useridentities._sheet = UserPropertySheet(
-                {"fullname": user["fullname"], "email": user["email"]})
-            authomatic_plugin._useridentities_by_userid[userid] = useridentities
+                id=userid,
+                schema=None,
+                **{"fullname": user["fullname"], "email": user["email"]},
+            )
+            authomatic_plugin._useridentities_by_userid[userid] = (
+                useridentities
+            )
             authomatic_plugin._userid_by_identityinfo[user_key] = userid
+            # replace provider id with internal plone uuid
+            user["id"] = userid
+            logger.info("Added new user: %s (%s)", userid, user["fullname"])
 
         return users
 
     @security.private
     def queryMSApiUsersEndpoint(self, login="", exact=False, **properties):
         if exact:
-            return self.queryMSApiUsers(login)
+            return self.queryMSApiUsers(self.getServiceUuid(login))
         else:
             return self.queryMSApiUsersInconsistently(login, properties)
 
@@ -237,38 +299,50 @@ class EEAEntraPlugin(BasePlugin):
         if search_id and not isinstance(search_id, str):
             raise NotImplementedError("sequence is not supported.")
 
-        return self.rememberUsers(
-            self.queryMSApiUsersEndpoint(search_id, exact_match, **kw))
+        result = []
+        if search_id and exact_match:
+            authomatic_plugin = get_authomatic_plugin()
+            result = authomatic_plugin.enumerateUsers(
+                id, login, exact_match, sort_by, max_results, **kw
+            )
+
+        if not result:
+            result = self.rememberUsers(
+                self.queryMSApiUsersEndpoint(search_id, exact_match, **kw)
+            )
+
+        return result
 
     @security.private
     def addGroup(self, *args, **kw):
-        """noop"""
+        """Noop"""
         pass
 
     @security.private
     def addPrincipalToGroup(self, *args, **kwargs):
-        """noop"""
+        """Noop"""
         pass
 
     @security.private
     def removeGroup(self, *args, **kwargs):
-        """noop"""
+        """Noop"""
         pass
 
     @security.private
     def removePrincipalFromGroup(self, *args, **kwargs):
-        """noop"""
+        """Noop"""
         pass
 
     @security.private
     def updateGroup(self, *args, **kw):
-        """noop"""
+        """Noop"""
         pass
 
     @security.private
     def setRolesForGroup(self, group_id, roles=()):
         rmanagers = self._getPlugins().listPlugins(
-            pas_interfaces.IRoleAssignerPlugin)
+            pas_interfaces.IRoleAssignerPlugin
+        )
         if not (rmanagers):
             raise NotImplementedError(
                 "There is no plugin that can assign roles to groups"
