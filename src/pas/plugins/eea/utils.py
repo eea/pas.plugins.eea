@@ -1,14 +1,24 @@
-from pas.plugins.authomatic.interfaces import DEFAULT_ID as DEFAULT_AUTHOMATIC_ID
+import typing
+
+from pas.plugins.authomatic.interfaces import (
+    DEFAULT_ID as DEFAULT_AUTHOMATIC_ID,
+)
+
 from plone import api
 
 from .interfaces import DEFAULT_ID
 
+if typing.TYPE_CHECKING:
+    from pas.plugins.authomatic.plugin import AuthomaticPlugin
 
-def get_plugin() -> 'pas.plugins.eea.plugin.EEAEntraPlugin':
+    from pas.plugins.eea.plugin import EEAEntraPlugin
+
+
+def get_plugin() -> "EEAEntraPlugin":
     return api.portal.get().acl_users.get(DEFAULT_ID)
 
 
-def get_authomatic_plugin() -> 'pas.plugins.authomatic.plugin.AuthomaticPlugin':
+def get_authomatic_plugin() -> "AuthomaticPlugin":
     return api.portal.get().acl_users.get(DEFAULT_AUTHOMATIC_ID)
 
 

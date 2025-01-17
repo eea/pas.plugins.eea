@@ -2,14 +2,17 @@ from datetime import datetime
 from logging import getLogger
 
 import requests
-from pas.plugins.authomatic.interfaces import \
-    DEFAULT_ID as DEFAULT_AUTHOMATIC_ID
-from plone import api
-from plone import schema
-from plone.autoform.form import AutoExtensibleForm
+from pas.plugins.authomatic.interfaces import (
+    DEFAULT_ID as DEFAULT_AUTHOMATIC_ID,
+)
+
 from z3c.form import button
 from z3c.form import form
 from zope.interface import Interface
+
+from plone import api
+from plone import schema
+from plone.autoform.form import AutoExtensibleForm
 
 from pas.plugins.eea.utils import get_plugin
 
@@ -41,8 +44,7 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
 
     @button.buttonAndHandler("Cancel")
     def handleCancel(self, action):
-        """User cancelled. Redirect back to the front page.
-        """
+        """User cancelled. Redirect back to the front page."""
         return self.request.response.redirect(api.portal.get().absolute_url())
 
     def do_sync(self):
@@ -66,7 +68,8 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
 
             response = plugin.queryApiEndpoint(
                 f"https://graph.microsoft.com/v1.0/users/{provider_uuid}",
-                session=session)
+                session=session,
+            )
 
             if response.status_code == 200:
                 info = response.json()

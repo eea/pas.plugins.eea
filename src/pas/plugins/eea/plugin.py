@@ -7,21 +7,24 @@ from time import time
 import requests
 from AccessControl import ClassSecurityInfo
 from AccessControl.class_init import InitializeClass
+from pas.plugins.authomatic.useridentities import UserIdentities
+from pas.plugins.authomatic.useridentities import UserIdentity
+from pas.plugins.authomatic.utils import authomatic_cfg
+
+from zope.interface import alsoProvides
+from zope.interface import implementer
+
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.PlonePAS.interfaces.group import IGroupIntrospection
 from Products.PlonePAS.interfaces.group import IGroupManagement
 from Products.PlonePAS.plugins.autogroup import VirtualGroup
-from Products.PluggableAuthService.UserPropertySheet import UserPropertySheet
 from Products.PluggableAuthService.interfaces import plugins as pas_interfaces
 from Products.PluggableAuthService.plugins.BasePlugin import BasePlugin
-from pas.plugins.authomatic.useridentities import UserIdentities
-from pas.plugins.authomatic.useridentities import UserIdentity
-from pas.plugins.authomatic.utils import authomatic_cfg
+from Products.PluggableAuthService.UserPropertySheet import UserPropertySheet
+
 from plone import api
 from plone.memoize import ram
 from plone.protect.interfaces import IDisableCSRFProtection
-from zope.interface import alsoProvides
-from zope.interface import implementer
 
 from pas.plugins.eea.utils import get_authomatic_plugin
 from pas.plugins.eea.utils import get_provider_name
@@ -116,9 +119,7 @@ class EEAEntraPlugin(BasePlugin):
         domain = cfg.get("domain")
 
         if domain:
-            url = (
-                f"https://login.microsoftonline.com/{domain}/oauth2/v2.0/token"
-            )
+            url = f"https://login.microsoftonline.com/{domain}/oauth2/v2.0/token"
             headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
             data = {
@@ -131,16 +132,15 @@ class EEAEntraPlugin(BasePlugin):
             response = requests.post(url, headers=headers, data=data)
             token_data = response.json()
 
-            MS_TOKEN_CACHE = {
-                "expires": time() + token_data["expires_in"] - 60
-            }
+            MS_TOKEN_CACHE = {"expires": time() + token_data["expires_in"] - 60}
             MS_TOKEN_CACHE.update(token_data)
             return MS_TOKEN_CACHE["access_token"]
 
     @security.private
     @ram.cache(_cachekey_query_api_endpoint)
-    def queryApiEndpoint(self, url, consistent=True, extra_headers=None,
-                         session: requests.Session = None):
+    def queryApiEndpoint(
+        self, url, consistent=True, extra_headers=None, session: requests.Session = None
+    ):
         token = self._getMSAccessToken()
 
         headers = {
@@ -167,9 +167,7 @@ class EEAEntraPlugin(BasePlugin):
             yield from data.get("value", [data])
             next_url = data.get("@odata.nextLink")
             if next_url:
-                yield from self.queryApiEndpointGetAll(
-                    next_url, *args, **kwargs
-                )
+                yield from self.queryApiEndpointGetAll(next_url, *args, **kwargs)
 
     @security.private
     def queryMSApiUsers(self, login=""):
@@ -232,8 +230,10 @@ class EEAEntraPlugin(BasePlugin):
         provider_name = get_provider_name(authomatic_cfg())
         plone_uuid_to_provider_uuid = {
             v: provider_uuid
-            for (name, provider_uuid), v
-            in authomatic_plugin._userid_by_identityinfo.items()
+            for (
+                name,
+                provider_uuid,
+            ), v in authomatic_plugin._userid_by_identityinfo.items()
             if name == provider_name
         }
         return plone_uuid_to_provider_uuid.get(plone_uuid, plone_uuid)
@@ -264,9 +264,7 @@ class EEAEntraPlugin(BasePlugin):
                 schema=None,
                 **{"fullname": user["fullname"], "email": user["email"]},
             )
-            authomatic_plugin._useridentities_by_userid[userid] = (
-                useridentities
-            )
+            authomatic_plugin._useridentities_by_userid[userid] = useridentities
             authomatic_plugin._userid_by_identityinfo[user_key] = userid
             # replace provider id with internal plone uuid
             user["id"] = userid
@@ -340,9 +338,7 @@ class EEAEntraPlugin(BasePlugin):
 
     @security.private
     def setRolesForGroup(self, group_id, roles=()):
-        rmanagers = self._getPlugins().listPlugins(
-            pas_interfaces.IRoleAssignerPlugin
-        )
+        rmanagers = self._getPlugins().listPlugins(pas_interfaces.IRoleAssignerPlugin)
         if not (rmanagers):
             raise NotImplementedError(
                 "There is no plugin that can assign roles to groups"

@@ -13,6 +13,8 @@
   -->
   <!--<includeDependencies package="." />-->
 
+  <include package="pas.plugins.authomatic" />
+
   <!-- has to be loaded before permissions are used, so keep above views aso. -->
   <include file="permissions.zcml" />
 

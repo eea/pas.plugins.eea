@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from plone.base.interfaces import INonInstallable
 from zope.interface import implementer
+
+from plone.base.interfaces import INonInstallable
 
 from .interfaces import DEFAULT_ID
 from .plugin import EEAEntraPlugin

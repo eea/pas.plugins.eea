@@ -6,7 +6,9 @@ from plone import api
 from plone.app.testing import TEST_USER_ID
 from plone.app.testing import setRoles
 
-from pas.plugins.eea.testing import PAS_PLUGINS_EEA_INTEGRATION_TESTING  # noqa: E501
+from pas.plugins.eea.testing import (  # noqa: E501
+    PAS_PLUGINS_EEA_INTEGRATION_TESTING,
+)
 
 try:
     from Products.CMFPlone.utils import get_installer
@@ -26,6 +28,8 @@ class TestSetup(unittest.TestCase):
             self.installer = get_installer(self.portal, self.layer["request"])
         else:
             self.installer = api.portal.get_tool("portal_quickinstaller")
+        self.installer.install_product("pas.plugins.authomatic")
+        self.installer.install_product("pas.plugins.eea")
 
     def test_product_installed(self):
         """Test if pas.plugins.eea is installed."""
@@ -33,8 +37,9 @@ class TestSetup(unittest.TestCase):
 
     def test_browserlayer(self):
         """Test that IPasPluginsEeaLayer is registered."""
-        from pas.plugins.eea.interfaces import IPasPluginsEeaLayer
         from plone.browserlayer import utils
+
+        from pas.plugins.eea.interfaces import IPasPluginsEeaLayer
 
         self.assertIn(IPasPluginsEeaLayer, utils.registered_layers())
 
@@ -60,7 +65,8 @@ class TestUninstall(unittest.TestCase):
 
     def test_browserlayer_removed(self):
         """Test that IPasPluginsEeaLayer is removed."""
-        from pas.plugins.eea.interfaces import IPasPluginsEeaLayer
         from plone.browserlayer import utils
+
+        from pas.plugins.eea.interfaces import IPasPluginsEeaLayer
 
         self.assertNotIn(IPasPluginsEeaLayer, utils.registered_layers())

@@ -51,3 +51,18 @@ zope = ["App", "zope", "BTrees", "z*", "Acquisition", "DateTime"]
 products = ["Products"]
 cmf = ["Products.CMF*"]
 plone = ["plone", "collective"]
+
+
+[tool.isort]
+profile = "black"
+force_single_line = true
+line_length = 79
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "ZOPE", "PRODUCTS", "CMF", "PLONE", "FIRSTPARTY", "LOCALFOLDER"]
+
+known_first_party = ["edw", "eea", "pas.plugins.eea"]
+known_third_party = ["chameleon", "graphene", "pycountry", "dateutil", "graphql", "reportlab"]
+
+known_zope = ["App", "zope", "BTrees", "z*", "Acquisition", "DateTime"]
+known_products = ["Products"]
+known_cmf = ["Products.CMF*"]
+known_plone = ["plone", "collective"]
