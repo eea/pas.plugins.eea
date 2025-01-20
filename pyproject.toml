@@ -66,3 +66,6 @@ known_zope = ["App", "zope", "BTrees", "z*", "Acquisition", "DateTime"]
 known_products = ["Products"]
 known_cmf = ["Products.CMF*"]
 known_plone = ["plone", "collective"]
+
+[tool.black]
+line-length = 79

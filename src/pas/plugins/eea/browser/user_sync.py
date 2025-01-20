@@ -66,13 +66,12 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
             identities = identities_mapping.get(user_id)
             log_message = "Fetching updated data for %s... %s"
 
-            response = plugin.queryApiEndpoint(
+            info = plugin.queryApiEndpoint(
                 f"https://graph.microsoft.com/v1.0/users/{provider_uuid}",
                 session=session,
             )
 
-            if response.status_code == 200:
-                info = response.json()
+            if info:
                 sheet = identities.propertysheet
                 sheet._properties["fullname"] = info["displayName"]
                 sheet._properties["email"] = info.get(
