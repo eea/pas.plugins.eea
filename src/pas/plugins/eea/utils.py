@@ -24,6 +24,9 @@ def get_authomatic_plugin() -> "AuthomaticPlugin":
 
 def get_provider_name(cfg, default="microsoft"):
     for name, settings in cfg.items():
-        if settings.get("class_") == "authomatic.providers.oauth2.MicrosoftOnline":
+        if (
+            settings.get("class_")
+            == "authomatic.providers.oauth2.MicrosoftOnline"
+        ):
             return name
     return default

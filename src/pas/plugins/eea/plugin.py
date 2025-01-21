@@ -3,20 +3,21 @@ from pathlib import Path
 
 from AccessControl import ClassSecurityInfo
 from AccessControl.class_init import InitializeClass
+
 from BTrees.OOBTree import OOBTree
+from zope.interface import implementer
+
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.PlonePAS.interfaces.group import IGroupIntrospection
 from Products.PlonePAS.interfaces.group import IGroupManagement
 from Products.PlonePAS.plugins.autogroup import VirtualGroup
 from Products.PluggableAuthService.interfaces import plugins as pas_interfaces
 from Products.PluggableAuthService.plugins.BasePlugin import BasePlugin
-from zope.interface import implementer
 
 logger = logging.getLogger(__name__)
 tpl_dir = Path(__file__).parent.resolve() / "browser"
 
 _marker = {}
-
 
 
 def manage_addEEAEntraPlugin(context, id, title="", RESPONSE=None, **kw):
@@ -143,7 +144,7 @@ class EEAEntraPlugin(BasePlugin):
                     }
                 ]
 
-        if not result:
+        else:
             result = [
                 {
                     "title": group_title,
@@ -161,15 +162,23 @@ class EEAEntraPlugin(BasePlugin):
         self, id=None, exact_match=False, sort_by=None, max_results=None, **kw
     ):
         result = []
-        if not id:
+        if not id and kw:
+            for group in self.savedGroups():
+                for key, value in kw.items():
+                    if value.lower() in group.get(key).lower():
+                        result.append(group)
+
+        elif not id:
             result = self.savedGroups()
 
         elif id and exact_match:
             result = self.savedGroups(id)
 
-        if not result:
+        elif id:
             query = id.lower()
-            result = [g for g in self.savedGroups() if query in g["title"].lower()]
+            result = [
+                g for g in self.savedGroups() if query in g["title"].lower()
+            ]
 
         return result
 

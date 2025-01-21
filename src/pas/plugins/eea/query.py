@@ -8,6 +8,7 @@ from typing import Literal
 from typing import TypedDict
 
 import requests
+
 from plone.memoize import ram
 
 logging.basicConfig(level=logging.DEBUG)
@@ -17,34 +18,44 @@ reqlogger.setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-ApiUser = TypedDict("ApiUser", {
-    "@odata.type": Literal["#microsoft.graph.user"],
-    "id": str,
-    "businessPhones": List[str],
-    "displayName": str,
-    "givenName": str | None,
-    "jobTitle": str | None,
-    "mail": str | None,
-    "mobilePhone": str | None,
-    "officeLocation": str | None,
-    "preferredLanguage": str | None,
-    "surname": str | None,
-    "userPrincipalName": str,
-})
+ApiUser = TypedDict(
+    "ApiUser",
+    {
+        "@odata.type": Literal["#microsoft.graph.user"],
+        "id": str,
+        "businessPhones": List[str],
+        "displayName": str,
+        "givenName": str | None,
+        "jobTitle": str | None,
+        "mail": str | None,
+        "mobilePhone": str | None,
+        "officeLocation": str | None,
+        "preferredLanguage": str | None,
+        "surname": str | None,
+        "userPrincipalName": str,
+    },
+)
 
-ApiGroup = TypedDict("ApiGroup", {
-    "@odata.type": Literal["#microsoft.graph.group"],
-    "id": str,
-    "displayName": str,
-    "mail": str | None,
-    "mailEnabled": bool,
-    "visibility": str | None,
-})
+ApiGroup = TypedDict(
+    "ApiGroup",
+    {
+        "@odata.type": Literal["#microsoft.graph.group"],
+        "id": str,
+        "displayName": str,
+        "mail": str | None,
+        "mailEnabled": bool,
+        "visibility": str | None,
+    },
+)
 
-ApiMember = TypedDict("ApiMember", {
-    "@odata.type": Literal["#microsoft.graph.group"] | Literal["#microsoft.graph.user"],
-    "id": str,
-})
+ApiMember = TypedDict(
+    "ApiMember",
+    {
+        "@odata.type": Literal["#microsoft.graph.group"]
+        | Literal["#microsoft.graph.user"],
+        "id": str,
+    },
+)
 
 
 def _cachekey_query_api_endpoint(
@@ -89,7 +100,9 @@ class QueryEntra:
         response = requests.post(url, headers=headers, data=data)
         token_data = response.json()
 
-        QueryEntra._token_cache = {"expires": time() + token_data["expires_in"] - 60}
+        QueryEntra._token_cache = {
+            "expires": time() + token_data["expires_in"] - 60
+        }
         QueryEntra._token_cache.update(token_data)
         return QueryEntra._token_cache["access_token"]
 
@@ -120,13 +133,17 @@ class QueryEntra:
             return response.json()
 
     def get_all(self, url, consistent=True, extra_headers=None):
-        data = self.get_url(url, consistent=consistent, extra_headers=extra_headers)
+        data = self.get_url(
+            url, consistent=consistent, extra_headers=extra_headers
+        )
         if data:
             yield from data.get("value", [data])
             next_url = data.get("@odata.nextLink")
             if next_url:
                 yield from self.get_all(
-                    next_url, consistent=consistent, extra_headers=extra_headers
+                    next_url,
+                    consistent=consistent,
+                    extra_headers=extra_headers,
                 )
 
     def get_user(self, user_id) -> ApiUser:
@@ -155,9 +172,7 @@ class QueryEntra:
         if custom_query:
             url = f'{url}?$search="{custom_query}"'
 
-        return self.get_all(
-            url, consistent=False
-        )
+        return self.get_all(url, consistent=False)
 
     def get_user_groups(self, user_id) -> Iterator[ApiGroup]:
         url = f"https://graph.microsoft.com/v1.0/users/{user_id}/memberOf/microsoft.graph.group?$top=999&$select=id"

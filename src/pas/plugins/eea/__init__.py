@@ -9,7 +9,6 @@ from Products.PluggableAuthService import registerMultiPlugin
 from pas.plugins.eea.plugin import EEAEntraPlugin
 from pas.plugins.eea.plugin import manage_addEEAEntraPlugin
 from pas.plugins.eea.plugin import manage_addEEAEntraPluginForm
-from pas.plugins.eea.plugin import tpl_dir
 
 _ = MessageFactory("pas.plugins.eea")
 

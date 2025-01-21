@@ -61,7 +61,9 @@ class TestUninstall(unittest.TestCase):
 
     def test_product_uninstalled(self):
         """Test if pas.plugins.eea is cleanly uninstalled."""
-        self.assertFalse(self.installer.is_product_installed("pas.plugins.eea"))
+        self.assertFalse(
+            self.installer.is_product_installed("pas.plugins.eea")
+        )
 
     def test_browserlayer_removed(self):
         """Test that IPasPluginsEeaLayer is removed."""

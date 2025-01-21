@@ -1,12 +1,13 @@
 from datetime import datetime
 from logging import getLogger
 
-from plone import api
-from plone import schema
-from plone.autoform.form import AutoExtensibleForm
 from z3c.form import button
 from z3c.form import form
 from zope.interface import Interface
+
+from plone import api
+from plone import schema
+from plone.autoform.form import AutoExtensibleForm
 
 from pas.plugins.eea.sync import SyncEntra
 
@@ -47,4 +48,8 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
         syncer.sync_groups()
         syncer.sync_group_members()
 
-        return syncer.count_users, syncer.count_groups, datetime.isoformat(datetime.now())
+        return (
+            syncer.count_users,
+            syncer.count_groups,
+            datetime.isoformat(datetime.now()),
+        )
