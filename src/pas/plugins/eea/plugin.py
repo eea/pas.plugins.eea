@@ -4,7 +4,7 @@ from pathlib import Path
 from AccessControl import ClassSecurityInfo
 from AccessControl.class_init import InitializeClass
 
-from BTrees.OOBTree import OOBTree
+from BTrees.OOBTree import OOBTree  # noqa
 from zope.interface import implementer
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
@@ -13,6 +13,8 @@ from Products.PlonePAS.interfaces.group import IGroupManagement
 from Products.PlonePAS.plugins.autogroup import VirtualGroup
 from Products.PluggableAuthService.interfaces import plugins as pas_interfaces
 from Products.PluggableAuthService.plugins.BasePlugin import BasePlugin
+
+from pas.plugins.eea.utils import get_authomatic_plugin
 
 logger = logging.getLogger(__name__)
 tpl_dir = Path(__file__).parent.resolve() / "browser"
@@ -36,7 +38,7 @@ manage_addEEAEntraPluginForm = PageTemplateFile(
 
 
 @implementer(
-    # pas_interfaces.IUserEnumerationPlugin,
+    pas_interfaces.IUserEnumerationPlugin,
     pas_interfaces.IGroupEnumerationPlugin,
     pas_interfaces.IGroupsPlugin,
     IGroupManagement,
@@ -181,6 +183,33 @@ class EEAEntraPlugin(BasePlugin):
             ]
 
         return result
+
+    @security.private
+    def enumerateUsers(
+        self,
+        id=None,
+        login=None,
+        *args,
+        **kw,
+    ):
+        plugin = get_authomatic_plugin()
+
+        if id and login and id != login:
+            existing = plugin._useridentities_by_userid[id]
+            if (
+                existing
+                and existing.propertysheet.getProperty("email", "").lower()
+                == login.lower()
+            ):
+                login = id
+
+        found = plugin.enumerateUsers(id, login, *args, **kw)
+
+        for user in found:
+            identity = plugin._useridentities_by_userid[user["id"]]
+            user["login"] = identity.propertysheet.getProperty("email", "")
+
+        return found
 
 
 InitializeClass(EEAEntraPlugin)

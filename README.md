@@ -39,8 +39,17 @@ and then running ``bin/buildout``
 After enabling the product in Site Setup -> Add-ons, make sure to:
 
 - go into Site Setup -> Authomatic (OAuth2/OpenID) and make sure that _"Generator for Plone User IDs."_ is set to *
-  *Provider User ID**.
+  *UUID as User ID**.
 - update the JSON configuration
+- make sure to add the following to the JSON configuration (for working sync)
+
+            "sync_propertymap": {
+            "id": "id",
+            "mail": "email",
+            "country": "location",
+            "displayName": "fullname",
+            "userPrincipalName": "email"
+        },
 
 # Contribute
 
