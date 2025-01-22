@@ -1,5 +1,6 @@
 from datetime import datetime
 from logging import getLogger
+from operator import methodcaller
 
 from z3c.form import button
 from z3c.form import form
@@ -15,7 +16,31 @@ logger = getLogger(__name__)
 
 
 class IUserSyncForm(Interface):
-    start_sync = schema.Bool(title="Start sync?", default=False)
+    add_new_users = schema.Bool(
+        title="Add new users",
+        default=True,
+        required=False,
+    )
+    remove_missing_users = schema.Bool(
+        title="Remove deleted users",
+        default=True,
+        required=False,
+    )
+    update_user_data = schema.Bool(
+        title="Update existing user data",
+        default=True,
+        required=False,
+    )
+    sync_groups = schema.Bool(
+        title="Fetch groups",
+        default=True,
+        required=False,
+    )
+    sync_group_members = schema.Bool(
+        title="Fetch group members (slow)",
+        default=True,
+        required=False,
+    )
 
 
 class UserSyncForm(AutoExtensibleForm, form.EditForm):
@@ -31,7 +56,7 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
             self.status = self.formErrorsMessage
             return
 
-        count_users, count_groups, seconds, done = self.do_sync()
+        count_users, count_groups, seconds, done = self.do_sync(data)
         self.status = f"Synced {count_users} users and {count_groups} groups in {seconds} seconds ({done})"
 
     @button.buttonAndHandler("Cancel")
@@ -39,10 +64,23 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
         """User cancelled. Redirect back to the front page."""
         return self.request.response.redirect(api.portal.get().absolute_url())
 
-    def do_sync(self):
+    def do_sync(self, data):
         t0 = datetime.now()
         syncer = SyncEntra()
-        syncer.sync_all()
+
+        options = [
+            "add_new_users",
+            "remove_missing_users",
+            "update_user_data",
+            "sync_groups",
+            "sync_group_members",
+        ]
+
+        for option in options:
+            if data.get(option):
+                methodcaller(option)(syncer)
+
+        # syncer.sync_all()
         seconds = (datetime.now() - t0).total_seconds()
         logger.info(
             "Synced %s users and %s groups in %s seconds.",

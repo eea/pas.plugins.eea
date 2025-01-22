@@ -56,6 +56,8 @@ setup(
         "plone.api>=1.8.4",
         "plone.app.dexterity",
         "pas.plugins.authomatic",
+        "requests",
+        "requests_futures",
     ],
     extras_require={
         "test": [

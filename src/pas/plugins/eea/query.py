@@ -1,13 +1,16 @@
 import logging
+from concurrent.futures import as_completed
 from dataclasses import dataclass
 from time import time
 from typing import Dict
+from typing import Iterable
 from typing import Iterator
 from typing import List
 from typing import Literal
 from typing import TypedDict
 
 import requests
+from requests_futures.sessions import FuturesSession
 
 from plone.memoize import ram
 
@@ -75,12 +78,15 @@ class QueryConfig:
 class QueryEntra:
 
     session: requests.Session
+    session_futures: FuturesSession
+
     config: QueryConfig
 
-    _token_cache: Dict[str, str] = {"expires": 0}
+    _token_cache: Dict[str, str | int] = {"expires": 0}
 
     def __init__(self, config, session=None):
         self.session = session or requests.Session()
+        self.session_futures = FuturesSession(max_workers=10)
         self.config = config
 
     def get_access_token(self):
@@ -106,13 +112,7 @@ class QueryEntra:
         QueryEntra._token_cache.update(token_data)
         return QueryEntra._token_cache["access_token"]
 
-    @ram.cache(_cachekey_query_api_endpoint)
-    def get_url(
-        self,
-        url,
-        consistent=True,
-        extra_headers=None,
-    ):
+    def _build_headers(self, consistent=True, extra_headers=None):
         token = self.get_access_token()
 
         headers = {
@@ -127,6 +127,25 @@ class QueryEntra:
         if extra_headers:
             headers.update(extra_headers)
 
+        return headers
+
+    def get_url_future(
+        self,
+        url,
+        consistent=True,
+        extra_headers=None,
+    ):
+        headers = self._build_headers(consistent, extra_headers)
+        return self.session_futures.get(url, headers=headers)
+
+    @ram.cache(_cachekey_query_api_endpoint)
+    def get_url(
+        self,
+        url,
+        consistent=True,
+        extra_headers=None,
+    ):
+        headers = self._build_headers(consistent, extra_headers)
         response = self.session.get(url, headers=headers)
 
         if response.status_code == 200:
@@ -190,3 +209,24 @@ class QueryEntra:
     def get_group_members(self, group_id) -> Iterator[ApiMember]:
         url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members?$top=999&$select=id"
         return self.get_all(url)
+
+    def get_group_members_parallel(
+        self, group_ids: Iterable[str]
+    ) -> Iterator[str | ApiMember]:
+        futures = []
+        for group_id in group_ids:
+            url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members?$top=999&$select=id"
+            f = self.get_url_future(url)
+            f.group_id = group_id
+            futures.append(f)
+
+        for future in as_completed(futures):
+            resp = future.result()
+            if resp.status_code == 200:
+                data = resp.json()
+                if data:
+                    yield future.group_id  # noqa
+                    yield from data.get("value", [data])
+                    next_url = data.get("@odata.nextLink")
+                    if next_url:
+                        yield from self.get_all(next_url)

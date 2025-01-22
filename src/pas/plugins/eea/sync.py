@@ -48,6 +48,7 @@ class SyncEntra:
     _qm: QueryEntra = None
 
     _new_users: set = None
+    _new_groups: set = None
 
     count_users: int = 0
     count_groups: int = 0
@@ -57,6 +58,7 @@ class SyncEntra:
         self._plugin_authomatic = get_authomatic_plugin()
         self._init_query_manager()
         self._new_users = set()
+        self._new_groups = set()
 
     def _init_query_manager(self):
         settings = authomatic_cfg()
@@ -148,6 +150,7 @@ class SyncEntra:
             del self._plugin_authomatic._useridentities_by_userid[plone_uuid]
             del self._plugin_authomatic._userid_by_identityinfo[user_key]
             logger.info("Removed user: %s (%s)", plone_uuid, user_fullname)
+            self.count_users += 1
 
     def update_user_data(self):
         for user in self._qm.get_all_users():
@@ -159,9 +162,8 @@ class SyncEntra:
                 uis = self._plugin_authomatic._useridentities_by_userid[
                     plone_uuid
                 ]
-                uis._identities[self._provider_name]._sheet = (
-                    self._create_property_sheet(plone_uuid, user)
-                )
+                uis._sheet = self._create_property_sheet(plone_uuid, user)
+                self.count_users += 1
 
     def sync_groups(self):
         self._plugin_eea._ad_groups.clear()
@@ -175,20 +177,26 @@ class SyncEntra:
         self._plugin_eea._ad_member_groups[plone_uuid].add(group_id)
 
     def sync_group_members(self):
-        for group_id in self._plugin_eea._ad_groups.keys():
-            self._plugin_eea._ad_group_members[group_id] = TreeSet()
-            for member in self._qm.get_group_members(group_id):
-                if member["@odata.type"] == "#microsoft.graph.user":
-                    plone_uuid = self.get_plone_uuid(member["id"])
+        group_id = None
+        group_ids = self._plugin_eea._ad_groups.keys()
+        for item in self._qm.get_group_members_parallel(group_ids):
+            if isinstance(item, str):
+                group_id = item
+                self._plugin_eea._ad_group_members[group_id] = TreeSet()
+                if group_id not in self._new_groups:
+                    self.count_groups += 1
+            else:
+                if item["@odata.type"] == "#microsoft.graph.user":
+                    plone_uuid = self.get_plone_uuid(item["id"])
                     self._plugin_eea._ad_group_members[group_id].add(
                         plone_uuid
                     )
                     self.remember_user_group(plone_uuid, group_id)
-                elif member["@odata.type"] == "#microsoft.graph.group":
+                elif item["@odata.type"] == "#microsoft.graph.group":
                     self._plugin_eea._ad_group_members[group_id].add(
-                        member["id"]
+                        item["id"]
                     )
-                    self.remember_user_group(member["id"], group_id)
+                    self.remember_user_group(item["id"], group_id)
 
     def sync_all(self):
         self.add_new_users()
