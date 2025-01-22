@@ -42,7 +42,7 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
     def do_sync(self):
         t0 = datetime.now()
         syncer = SyncEntra()
-        # syncer.sync_all()
+        syncer.sync_all()
         seconds = (datetime.now() - t0).total_seconds()
         logger.info(
             "Synced %s users and %s groups in %s seconds.",
