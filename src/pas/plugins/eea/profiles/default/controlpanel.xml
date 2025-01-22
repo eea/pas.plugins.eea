@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<object xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+        name="portal_controlpanel"
+        purge="False"
+        i18n:domain="pas.plugins.eea"
+>
+
+  <configlet action_id="eea_user_sync"
+             appId="pas.plugins.eea"
+             category="plone-users"
+             condition_expr=""
+             icon_expr="string:people-fill"
+             title="EEA users sync"
+             url_expr="string:${portal_url}/@@eea_user_sync-controlpanel"
+             visible="True"
+             i18n:attributes="title"
+  >
+    <permission>Manage portal</permission>
+  </configlet>
+
+</object>

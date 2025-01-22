@@ -8,6 +8,7 @@ from zope.interface import Interface
 
 from plone import api
 from plone import schema
+from plone.app.registry.browser import controlpanel
 from plone.autoform.form import AutoExtensibleForm
 
 from pas.plugins.eea.sync import SyncEntra
@@ -49,7 +50,7 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
 
     label = "Sync users with Entra ID"
 
-    @button.buttonAndHandler("Ok")
+    @button.buttonAndHandler("Start sync")
     def handleApply(self, action):
         data, errors = self.extractData()
         if errors:
@@ -62,7 +63,11 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
     @button.buttonAndHandler("Cancel")
     def handleCancel(self, action):
         """User cancelled. Redirect back to the front page."""
-        return self.request.response.redirect(api.portal.get().absolute_url())
+        nav_root_url = api.portal.get_navigation_root(
+            self.context
+        ).absolute_url()
+        url_control_panel = f"{nav_root_url}/@@overview-controlpanel"
+        return self.request.response.redirect(url_control_panel)
 
     def do_sync(self, data):
         t0 = datetime.now()
@@ -95,3 +100,7 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
             seconds,
             datetime.isoformat(datetime.now()),
         )
+
+
+class UserSyncControlPanel(controlpanel.ControlPanelFormWrapper):
+    form = UserSyncForm

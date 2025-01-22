@@ -12,10 +12,11 @@
       />
 
 
+  <!-- Control panel -->
   <browser:page
     for="*"
-    name="pas_plugins_eea_user_sync"
-    class=".user_sync.UserSyncForm"
+    name="eea_user_sync-controlpanel"
+    class=".controlpanel_user_sync.UserSyncControlPanel"
     permission="cmf.ManagePortal"
     layer="pas.plugins.eea.interfaces.IPasPluginsEeaLayer"
     />
