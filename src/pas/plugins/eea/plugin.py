@@ -1,4 +1,5 @@
 import logging
+from operator import attrgetter
 from pathlib import Path
 
 from AccessControl import ClassSecurityInfo
@@ -8,18 +9,79 @@ from BTrees.OOBTree import OOBTree  # noqa
 from zope.interface import implementer
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from Products.PlonePAS.interfaces.group import IGroupData
 from Products.PlonePAS.interfaces.group import IGroupIntrospection
 from Products.PlonePAS.interfaces.group import IGroupManagement
 from Products.PlonePAS.plugins.autogroup import VirtualGroup
+from Products.PlonePAS.tools.groupdata import GroupData
+from Products.PlonePAS.tools.memberdata import MemberData
 from Products.PluggableAuthService.interfaces import plugins as pas_interfaces
 from Products.PluggableAuthService.plugins.BasePlugin import BasePlugin
 
+from plone import api
+
 from pas.plugins.eea.utils import get_authomatic_plugin
+from pas.plugins.eea.utils import get_plugin
 
 logger = logging.getLogger(__name__)
 tpl_dir = Path(__file__).parent.resolve() / "browser"
 
 _marker = {}
+
+
+@implementer(IGroupData)
+class EEAEntraGroupData(VirtualGroup):
+    """Wrapper in order to satisfy plone.restapi serializer."""
+
+    canAddToGroup = MemberData.canAddToGroup
+    canRemoveFromGroup = MemberData.canRemoveFromGroup
+    canAssignRole = MemberData.canAssignRole
+    canDelete = GroupData.canDelete
+    canPasswordSet = GroupData.canPasswordSet
+    passwordInClear = GroupData.passwordInClear
+
+    def __str__(self):
+        return self.id
+
+    def getMemberId(self):
+        """
+        This method added to satisfy check in
+        PlonePAS.tools.groups.GroupTool.wrapGroup
+        """
+        return self.id
+
+    def getGroupName(self):
+        return self.title
+
+    def getProperty(self, name, default=None):
+        result = default
+        if name in ["id", "title", "description"]:
+            result = attrgetter(name)(self) or default
+        return result
+
+    def getProperties(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+        }
+
+    def getRoles(self):
+        return []
+
+    def getGroupMemberIds(self):
+        plugin = get_plugin()
+        return plugin.getGroupMembers(self.id)
+
+    def _getPlugins(self):
+        portal = api.portal.get()
+        return portal.acl_users.plugins
+
+    def canWriteProperty(self, name):
+        return False
+
+    def getGroupTitleOrName(self):
+        return self.title or self.id
 
 
 def manage_addEEAEntraPlugin(context, id, title="", RESPONSE=None, **kw):
@@ -107,7 +169,7 @@ class EEAEntraPlugin(BasePlugin):
         groups = self.savedGroups(group_id)
         group = groups[0] if len(groups) == 1 else None
         if group:
-            return VirtualGroup(
+            return EEAEntraGroupData(
                 group["id"],
                 title=group["title"],
                 description=group["title"],
@@ -193,6 +255,14 @@ class EEAEntraPlugin(BasePlugin):
         **kw,
     ):
         plugin = get_authomatic_plugin()
+
+        if isinstance(id, list):
+            # handle plone.restapi
+            id = "".join(id)
+
+        if isinstance(login, list):
+            # handle plone.restapi
+            login = "".join(login)
 
         if id and login and id != login:
             existing = plugin._useridentities_by_userid[id]
