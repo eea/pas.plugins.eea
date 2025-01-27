@@ -179,6 +179,10 @@ class SyncEntra:
     def sync_group_members(self):
         group_id = None
         group_ids = self._plugin_eea._ad_groups.keys()
+
+        # clear existing user to group mapping
+        self._plugin_eea._ad_member_groups.clear()
+
         for item in self._qm.get_group_members_parallel(group_ids):
             if isinstance(item, str):
                 group_id = item

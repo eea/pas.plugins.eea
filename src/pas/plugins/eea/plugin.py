@@ -82,6 +82,9 @@ class EEAEntraGroupData(VirtualGroup):
 
     def getGroupTitleOrName(self):
         return self.title or self.id
+    
+    def setGroupProperties(self, mapping):
+        pass
 
 
 def manage_addEEAEntraPlugin(context, id, title="", RESPONSE=None, **kw):
