@@ -68,7 +68,9 @@ class EEAEntraGroupData(VirtualGroup):
 
     def getRoles(self):
         result = set()
-        rolemakers = self._getPlugins().listPlugins(pas_interfaces.IRolesPlugin)
+        rolemakers = self._getPlugins().listPlugins(
+            pas_interfaces.IRolesPlugin
+        )
         for rolemaker_id, rolemaker in rolemakers:
             roles = rolemaker.getRolesForPrincipal(self)
             if roles:
@@ -89,7 +91,7 @@ class EEAEntraGroupData(VirtualGroup):
 
     def getGroupTitleOrName(self):
         return self.title or self.id
-    
+
     def setGroupProperties(self, mapping):
         pass
 
