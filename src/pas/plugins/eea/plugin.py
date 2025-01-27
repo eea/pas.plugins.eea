@@ -67,7 +67,14 @@ class EEAEntraGroupData(VirtualGroup):
         }
 
     def getRoles(self):
-        return []
+        result = set()
+        rolemakers = self._getPlugins().listPlugins(pas_interfaces.IRolesPlugin)
+        for rolemaker_id, rolemaker in rolemakers:
+            roles = rolemaker.getRolesForPrincipal(self)
+            if roles:
+                result.update(roles)
+
+        return list(result)
 
     def getGroupMemberIds(self):
         plugin = get_plugin()
