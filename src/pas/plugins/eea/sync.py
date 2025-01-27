@@ -141,7 +141,7 @@ class SyncEntra:
             service_uuid = self.get_service_uuid(plone_uuid)
             user_key = (self._provider_name, service_uuid)
             uis = self._plugin_authomatic._useridentities_by_userid[plone_uuid]
-            user_props = uis._identities[self._provider_name]._sheet
+            user_props = uis._sheet
             user_fullname = (
                 user_props.getProperty("fullname")
                 if user_props
