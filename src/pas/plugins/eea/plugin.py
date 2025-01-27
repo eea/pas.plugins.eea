@@ -185,6 +185,9 @@ class EEAEntraPlugin(BasePlugin):
         result = self._ad_member_groups.get(principal_id, [])
         return [x for x in result]
 
+    def getGroups(self):
+        return [self.getGroupById(group_id) for group_id in self.getGroupIds()]
+
     @security.private
     def getGroupMembers(self, group_id):
         result = self._ad_group_members.get(group_id, [])
