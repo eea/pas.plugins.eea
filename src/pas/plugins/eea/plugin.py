@@ -261,23 +261,8 @@ class EEAEntraPlugin(BasePlugin):
 
         return result
 
-    @security.private
-    def enumerateUsers(
-        self,
-        id=None,
-        login=None,
-        *args,
-        **kw,
-    ):
+    def _enumerate_authomatic(self, id=None, login=None, *args, **kw):
         plugin = get_authomatic_plugin()
-
-        if isinstance(id, list):
-            # handle plone.restapi
-            id = "".join(id)
-
-        if isinstance(login, list):
-            # handle plone.restapi
-            login = "".join(login)
 
         if id and login and id != login:
             existing = plugin._useridentities_by_userid[id]
@@ -295,6 +280,44 @@ class EEAEntraPlugin(BasePlugin):
             user["login"] = identity.propertysheet.getProperty("email", "")
 
         return found
+
+    def _enumerate_zodb_mutable_properties(
+        self, id=None, login=None, *args, **kw
+    ):
+        plugin = self._getPAS().mutable_properties
+        found = plugin.enumerateUsers(id, login, *args, **kw)
+
+        for user in found:
+            user["login"] = user["email"] or user["login"]
+
+        return found
+
+    @security.private
+    def enumerateUsers(
+        self,
+        id=None,
+        login=None,
+        *args,
+        **kw,
+    ):
+        """This function wraps authomatic.enumerateUsers as well as mutable_properties.enumerateUsers.
+        The User_Enumerateion (enumerateUsers) functionality should be disabled for those two plugins.
+        """
+        if isinstance(id, list):
+            # handle plone.restapi
+            id = "".join(id)
+
+        if isinstance(login, list):
+            # handle plone.restapi
+            login = "".join(login)
+
+        if id is login is None and kw:
+            return self._enumerate_zodb_mutable_properties(
+                id, login, *args, **kw
+            )
+
+        else:
+            return self._enumerate_authomatic(id, login, *args, **kw)
 
 
 InitializeClass(EEAEntraPlugin)

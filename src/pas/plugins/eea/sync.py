@@ -2,14 +2,23 @@ import logging
 import uuid
 from dataclasses import dataclass
 
+from pas.plugins.authomatic.plugin import AuthomaticPlugin
 from pas.plugins.authomatic.useridentities import UserIdentities
 from pas.plugins.authomatic.useridentities import UserIdentity
 from pas.plugins.authomatic.utils import authomatic_cfg
 
 from BTrees.OOBTree import TreeSet  # noqa
 
+from Products.PlonePAS.plugins.property import ZODBMutablePropertyProvider
+from Products.PluggableAuthService.PluggableAuthService import (
+    PluggableAuthService,
+)
 from Products.PluggableAuthService.UserPropertySheet import UserPropertySheet
+from Products.PluginRegistry.PluginRegistry import PluginRegistry
 
+from plone import api
+
+from pas.plugins.eea import EEAEntraPlugin
 from pas.plugins.eea.query import ApiUser
 from pas.plugins.eea.query import QueryConfig
 from pas.plugins.eea.query import QueryEntra
@@ -44,6 +53,14 @@ class MockAuthResult:
 
 class SyncEntra:
 
+    _cfg: dict = None
+
+    _acl: PluggableAuthService = None
+
+    _plugin_eea: EEAEntraPlugin = None
+    _plugin_authomatic: AuthomaticPlugin = None
+    _plugin_mutable_properties: ZODBMutablePropertyProvider = None
+
     _provider_name: str = None
     _qm: QueryEntra = None
 
@@ -54,8 +71,10 @@ class SyncEntra:
     count_groups: int = 0
 
     def __init__(self):
+        self._acl = api.portal.get().acl_users
         self._plugin_eea = get_plugin()
         self._plugin_authomatic = get_authomatic_plugin()
+        self._plugin_mutable_properties = self._acl.mutable_properties
         self._init_query_manager()
         self._new_users = set()
         self._new_groups = set()
@@ -71,6 +90,16 @@ class SyncEntra:
         self._cfg = cfg
         self._provider_name = provider_name
         self._qm = QueryEntra(query_config)
+
+    def _update_mutable_properties(self, plone_uuid, property_sheet):
+        email = property_sheet.getProperty("email")
+        if self._plugin_mutable_properties._storage.get(plone_uuid):
+            user = self._acl._createUser(
+                self._acl.plugins, plone_uuid, email or plone_uuid
+            )
+            self._plugin_mutable_properties.setPropertiesForUser(
+                user, property_sheet
+            )
 
     def get_plone_uuid(self, service_uuid):
         plone_key = (self._provider_name, service_uuid)
@@ -163,6 +192,7 @@ class SyncEntra:
                     plone_uuid
                 ]
                 uis._sheet = self._create_property_sheet(plone_uuid, user)
+                self._update_mutable_properties(plone_uuid, uis._sheet)
                 self.count_users += 1
 
     def sync_groups(self):

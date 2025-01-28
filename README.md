@@ -44,12 +44,18 @@ After enabling the product in Site Setup -> Add-ons, make sure to:
 - make sure to add the following to the JSON configuration (for working sync)
 
             "sync_propertymap": {
-            "id": "id",
-            "mail": "email",
-            "country": "location",
-            "displayName": "fullname",
-            "userPrincipalName": "email"
-        },
+              "id": "id",
+              "mail": "email",
+              "country": "location",
+              "displayName": "fullname",
+              "userPrincipalName": "email"
+            },
+- Disable the following functionalities in `acl_users`:
+  - `authomatic`:
+    - User_Enumeration (this is handled by `eea_entra` - the `login` property is set to the user email)
+    - User_Management (to disable the remove checkboxes, as Entra users cannot be deleted from Plone)
+  - `mutable_properties`:
+    - User_Enumeration (this is handled by `eea_entra` - the `login` property is set to the user email)
 
 # Contribute
 
