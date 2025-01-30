@@ -48,14 +48,17 @@ After enabling the product in Site Setup -> Add-ons, make sure to:
               "mail": "email",
               "country": "location",
               "displayName": "fullname",
-              "userPrincipalName": "email"
+              "userPrincipalName": "email",
+              "userType": null
             },
 - Disable the following functionalities in `acl_users`:
   - `authomatic`:
     - User_Enumeration (this is handled by `eea_entra` - the `login` property is set to the user email)
     - User_Management (to disable the remove checkboxes, as Entra users cannot be deleted from Plone)
+    - Properties (to add "External" emoji)
   - `mutable_properties`:
     - User_Enumeration (this is handled by `eea_entra` - the `login` property is set to the user email)
+- In acl_users -> plugins -> Properties Plugins make sure that `eea_entra` is at the top of the list of "Active Plugins".
 
 # Contribute
 

@@ -36,6 +36,7 @@ ApiUser = TypedDict(
         "preferredLanguage": str | None,
         "surname": str | None,
         "userPrincipalName": str,
+        "userType": str,
     },
 )
 
@@ -44,6 +45,7 @@ ApiGroup = TypedDict(
     {
         "@odata.type": Literal["#microsoft.graph.group"],
         "id": str,
+        "description": str,
         "displayName": str,
         "mail": str | None,
         "mailEnabled": bool,
@@ -170,8 +172,10 @@ class QueryEntra:
         data = self.get_url(url)
         return data.get("value") if data else None
 
-    def get_all_users(self) -> Iterator[ApiUser]:
+    def get_all_users(self, properties=None) -> Iterator[ApiUser]:
         url = "https://graph.microsoft.com/v1.0/users?$top=999"
+        if properties:
+            url = f"{url}&$select={','.join(properties)}"
         return self.get_all(url)
 
     def search_users(self, query, properties=None) -> Iterator[ApiUser]:

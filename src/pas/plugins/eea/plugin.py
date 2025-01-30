@@ -17,6 +17,7 @@ from Products.PlonePAS.tools.groupdata import GroupData
 from Products.PlonePAS.tools.memberdata import MemberData
 from Products.PluggableAuthService.interfaces import plugins as pas_interfaces
 from Products.PluggableAuthService.plugins.BasePlugin import BasePlugin
+from Products.PluggableAuthService.UserPropertySheet import UserPropertySheet
 
 from plone import api
 
@@ -51,7 +52,7 @@ class EEAEntraGroupData(VirtualGroup):
         return self.id
 
     def getGroupName(self):
-        return self.title
+        return self.getName()
 
     def getProperty(self, name, default=None):
         result = default
@@ -113,6 +114,7 @@ manage_addEEAEntraPluginForm = PageTemplateFile(
 
 @implementer(
     pas_interfaces.IUserEnumerationPlugin,
+    pas_interfaces.IPropertiesPlugin,
     pas_interfaces.IGroupEnumerationPlugin,
     pas_interfaces.IGroupsPlugin,
     IGroupManagement,
@@ -138,6 +140,7 @@ class EEAEntraPlugin(BasePlugin):
         self._ad_groups = OOBTree()
         self._ad_group_members = OOBTree()
         self._ad_member_groups = OOBTree()
+        self._user_types = OOBTree()
 
     @security.private
     def addGroup(self, *args, **kw):
@@ -184,7 +187,7 @@ class EEAEntraPlugin(BasePlugin):
             return EEAEntraGroupData(
                 group["id"],
                 title=group["title"],
-                description=group["title"],
+                description=group["description"],
             )
 
     @security.private
@@ -212,11 +215,13 @@ class EEAEntraPlugin(BasePlugin):
         result = []
 
         if query:
-            group_title = self._ad_groups.get(query, None)
-            if group_title:
+            group_info = self._ad_groups.get(query, None)
+            if group_info:
+                group_title, group_description = group_info
                 result = [
                     {
                         "title": group_title,
+                        "description": group_description,
                         "id": query,
                         "groupid": query,
                         "pluginid": pluginid,
@@ -227,11 +232,15 @@ class EEAEntraPlugin(BasePlugin):
             result = [
                 {
                     "title": group_title,
+                    "description": group_description,
                     "id": group_id,
                     "groupid": group_id,
                     "pluginid": pluginid,
                 }
-                for group_id, group_title in self._ad_groups.items()
+                for group_id, (
+                    group_title,
+                    group_description,
+                ) in self._ad_groups.items()
             ]
 
         return result
@@ -293,6 +302,20 @@ class EEAEntraPlugin(BasePlugin):
         return found
 
     @security.private
+    def getPropertiesForUser(self, user, request=None):
+        plugin = get_authomatic_plugin()
+        found = plugin.getPropertiesForUser(user, request)
+        if found:
+            found = UserPropertySheet(
+                found.getId(), schema=found._schema, **found._properties
+            )
+            is_external = self._user_types.get(user.getId()) == "Guest"
+            if is_external:
+                fullname = found.getProperty("fullname", "")
+                found._properties["fullname"] = f"🌐 {fullname}"
+        return found
+
+    @security.private
     def enumerateUsers(
         self,
         id=None,
@@ -311,7 +334,7 @@ class EEAEntraPlugin(BasePlugin):
             # handle plone.restapi
             login = "".join(login)
 
-        if id is login is None and kw:
+        if id is login is None:
             return self._enumerate_zodb_mutable_properties(
                 id, login, *args, **kw
             )

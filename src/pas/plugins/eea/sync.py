@@ -129,8 +129,8 @@ class SyncEntra:
     def _create_property_sheet(self, plone_uuid, user: ApiUser):
         pdata = dict(id=plone_uuid)
         for akey, pkey in self._cfg.get("sync_propertymap", {}).items():
-            if not pdata.get(pkey):
-                pdata[pkey] = user.get(akey, "")
+            if pkey and not pdata.get(pkey):
+                pdata[pkey] = user.get(akey, "") or ""
         pdata["email"] = self._get_user_email(user)
         sheet = UserPropertySheet(**pdata)
         return sheet
@@ -146,13 +146,15 @@ class SyncEntra:
         uis._sheet = self._create_property_sheet(plone_uuid, user)
         self._plugin_authomatic._useridentities_by_userid[plone_uuid] = uis
         self._plugin_authomatic._userid_by_identityinfo[user_key] = plone_uuid
+        self._plugin_eea._user_types[plone_uuid] = user["userType"]
 
         self.count_users += 1
         self._new_users.add(user["id"])
         logger.info("Added new user: %s (%s)", plone_uuid, user["displayName"])
 
     def add_new_users(self):
-        for user in self._qm.get_all_users():
+        properties = self._cfg.get("sync_propertymap", {}).keys()
+        for user in self._qm.get_all_users(properties=properties):
             plone_uuid = self.get_plone_uuid(user["id"])
             if not plone_uuid:
                 self.remember_user(user)
@@ -160,7 +162,7 @@ class SyncEntra:
     def remove_missing_users(self):
         active_remote_uuids = {
             self.get_plone_uuid(user["id"])
-            for user in self._qm.get_all_users()
+            for user in self._qm.get_all_users(properties=["id"])
         }
         local_uuids = {
             x for x in self._plugin_authomatic._useridentities_by_userid.keys()
@@ -182,7 +184,8 @@ class SyncEntra:
             self.count_users += 1
 
     def update_user_data(self):
-        for user in self._qm.get_all_users():
+        properties = self._cfg.get("sync_propertymap", {}).keys()
+        for user in self._qm.get_all_users(properties=properties):
             if user["id"] in self._new_users:
                 # Skip newly added users (they're already up to date).
                 continue
@@ -193,12 +196,16 @@ class SyncEntra:
                 ]
                 uis._sheet = self._create_property_sheet(plone_uuid, user)
                 self._update_mutable_properties(plone_uuid, uis._sheet)
+                self._plugin_eea._user_types[plone_uuid] = user["userType"]
                 self.count_users += 1
 
     def sync_groups(self):
         self._plugin_eea._ad_groups.clear()
         for group in self._qm.get_all_groups():
-            self._plugin_eea._ad_groups[group["id"]] = group["displayName"]
+            self._plugin_eea._ad_groups[group["id"]] = (
+                group["displayName"],
+                group["description"],
+            )
             self.count_groups += 1
 
     def remember_user_group(self, plone_uuid, group_id):
