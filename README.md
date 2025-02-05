@@ -51,6 +51,7 @@ After enabling the product in Site Setup -> Add-ons, make sure to:
               "userPrincipalName": "email",
               "userType": null
             },
+- From control panel run sync users  
 - Disable the following functionalities in `acl_users`:
   - `authomatic`:
     - User_Enumeration (this is handled by `eea_entra` - the `login` property is set to the user email)
