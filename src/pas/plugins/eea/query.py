@@ -7,7 +7,9 @@ from typing import Iterable
 from typing import Iterator
 from typing import List
 from typing import Literal
+from typing import Optional
 from typing import TypedDict
+from typing import Union
 
 import requests
 from requests_futures.sessions import FuturesSession
@@ -28,13 +30,13 @@ ApiUser = TypedDict(
         "id": str,
         "businessPhones": List[str],
         "displayName": str,
-        "givenName": str | None,
-        "jobTitle": str | None,
-        "mail": str | None,
-        "mobilePhone": str | None,
-        "officeLocation": str | None,
-        "preferredLanguage": str | None,
-        "surname": str | None,
+        "givenName": Optional[str],
+        "jobTitle": Optional[str],
+        "mail": Optional[str],
+        "mobilePhone": Optional[str],
+        "officeLocation": Optional[str],
+        "preferredLanguage": Optional[str],
+        "surname": Optional[str],
         "userPrincipalName": str,
         "userType": str,
     },
@@ -47,17 +49,18 @@ ApiGroup = TypedDict(
         "id": str,
         "description": str,
         "displayName": str,
-        "mail": str | None,
+        "mail": Optional[str],
         "mailEnabled": bool,
-        "visibility": str | None,
+        "visibility": Optional[str],
     },
 )
 
 ApiMember = TypedDict(
     "ApiMember",
     {
-        "@odata.type": Literal["#microsoft.graph.group"]
-        | Literal["#microsoft.graph.user"],
+        "@odata.type": Union[
+            Literal["#microsoft.graph.group"], Literal["#microsoft.graph.user"]
+        ],
         "id": str,
     },
 )
@@ -84,7 +87,7 @@ class QueryEntra:
 
     config: QueryConfig
 
-    _token_cache: Dict[str, str | int] = {"expires": 0}
+    _token_cache: Dict[str, Union[str, int]] = {"expires": 0}
 
     def __init__(self, config, session=None):
         self.session = session or requests.Session()
@@ -216,7 +219,7 @@ class QueryEntra:
 
     def get_group_members_parallel(
         self, group_ids: Iterable[str]
-    ) -> Iterator[str | ApiMember]:
+    ) -> Iterator[Union[str, ApiMember]]:
         futures = []
         for group_id in group_ids:
             url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members?$top=999&$select=id"

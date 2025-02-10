@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from zope.interface import implementer
 
-from plone.base.interfaces import INonInstallable
+try:
+    from plone.base.interfaces import INonInstallable
+except ImportError:
+    from Products.CMFPlone.interfaces import INonInstallable
 
 from .interfaces import DEFAULT_ID
 from .plugin import EEAEntraPlugin

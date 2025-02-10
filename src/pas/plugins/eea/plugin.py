@@ -1,6 +1,7 @@
 import logging
 from operator import attrgetter
 from pathlib import Path
+from typing import Optional
 
 from AccessControl import ClassSecurityInfo
 from AccessControl.class_init import InitializeClass
@@ -127,8 +128,8 @@ class EEAEntraPlugin(BasePlugin):
     meta_type = "EEA Entra Plugin"
     manage_options = BasePlugin.manage_options
 
-    _ad_groups: dict | None = None
-    _ad_group_members: dict | None = None
+    _ad_groups: Optional[dict] = None
+    _ad_group_members: Optional[dict] = None
 
     # Tell PAS not to swallow our exceptions
     _dont_swallow_my_exceptions = True
