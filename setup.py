@@ -1,12 +1,14 @@
 """ pas.plugins.eea Installer
 """
+
 import os
 from os.path import join
-from setuptools import find_packages, setup
 
+from setuptools import find_packages
+from setuptools import setup
 
-NAME = 'pas.plugins.eea'
-PATH = NAME.split('.') + ['version.txt']
+NAME = "pas.plugins.eea"
+PATH = NAME.split(".") + ["version.txt"]
 VERSION = ""
 with open(join(*PATH), "r", encoding="utf-8") as version_file:
     VERSION = version_file.read().strip()
@@ -15,8 +17,7 @@ LONG_DESCRIPTION = ""
 with open("README.rst", "r", encoding="utf-8") as readme_file:
     LONG_DESCRIPTION = readme_file.read()
 
-with open(os.path.join("docs", "HISTORY.txt"),
-          "r", encoding="utf-8") as hfile:
+with open(os.path.join("docs", "HISTORY.txt"), "r", encoding="utf-8") as hfile:
     LONG_DESCRIPTION += "\n" + hfile.read()
 
 
@@ -39,9 +40,9 @@ setup(
         "Operating System :: OS Independent",
         "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     ],
-    keywords='EEA Add-ons Plone Zope',
-    author='European Environment Agency: IDM2 A-Team',
-    author_email='eea-edw-a-team-alerts@googlegroups.com',
+    keywords="EEA Add-ons Plone Zope",
+    author="European Environment Agency: IDM2 A-Team",
+    author_email="eea-edw-a-team-alerts@googlegroups.com",
     url="https://github.com/collective/pas.plugins.eea",
     project_urls={
         "PyPI": "https://pypi.org/project/pas.plugins.eea/",
