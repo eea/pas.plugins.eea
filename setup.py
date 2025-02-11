@@ -8,7 +8,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 NAME = "pas.plugins.eea"
-PATH = NAME.split(".") + ["version.txt"]
+PATH = ["src"] + NAME.split(".") + ["version.txt"]
 VERSION = ""
 with open(join(*PATH), "r", encoding="utf-8") as version_file:
     VERSION = version_file.read().strip()
