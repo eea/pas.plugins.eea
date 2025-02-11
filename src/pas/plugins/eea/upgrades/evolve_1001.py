@@ -2,8 +2,6 @@ import logging
 
 from BTrees.OOBTree import OOBTree  # noqa
 
-import plone.api as api
-
 from pas.plugins.eea.sync import SyncEntra
 from pas.plugins.eea.utils import get_plugin
 

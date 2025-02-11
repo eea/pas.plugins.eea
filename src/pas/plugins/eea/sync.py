@@ -14,7 +14,6 @@ from Products.PluggableAuthService.PluggableAuthService import (
     PluggableAuthService,
 )
 from Products.PluggableAuthService.UserPropertySheet import UserPropertySheet
-from Products.PluginRegistry.PluginRegistry import PluginRegistry
 
 from plone import api
 
