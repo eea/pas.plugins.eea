@@ -1,3 +1,5 @@
+""" Utils. """
+
 import typing
 
 from pas.plugins.authomatic.interfaces import (
@@ -15,14 +17,17 @@ if typing.TYPE_CHECKING:
 
 
 def get_plugin() -> "EEAEntraPlugin":
+    """Returns the EEAEntraPlugin."""
     return api.portal.get().acl_users.get(DEFAULT_ID)
 
 
 def get_authomatic_plugin() -> "AuthomaticPlugin":
+    """Returns the AuthomaticPlugin."""
     return api.portal.get().acl_users.get(DEFAULT_AUTHOMATIC_ID)
 
 
 def get_provider_name(cfg, default="microsoft"):
+    """Returns the configured provider name. Default is "microsoft"."""
     for name, settings in cfg.items():
         if (
             settings.get("class_")

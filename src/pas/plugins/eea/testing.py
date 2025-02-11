@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=all
+
 from plone.app.robotframework.testing import REMOTE_LIBRARY_BUNDLE_FIXTURE
 from plone.app.testing import PLONE_FIXTURE
 from plone.app.testing import FunctionalTesting

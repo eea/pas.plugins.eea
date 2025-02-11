@@ -1,3 +1,14 @@
+# pylint: disable=import-error
+# pylint: disable=no-name-in-module
+# pylint: disable=protected-access
+# pylint: disable=missing-function-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=ungrouped-imports
+# pylint: disable=too-few-public-methods
+
+""" Handle synchronization. """
+
 import logging
 import uuid
 from dataclasses import dataclass
@@ -127,7 +138,7 @@ class SyncEntra:
         return user_email
 
     def _create_property_sheet(self, plone_uuid, user: ApiUser):
-        pdata = dict(id=plone_uuid)
+        pdata = {"id": plone_uuid}
         for akey, pkey in self._cfg.get("sync_propertymap", {}).items():
             if pkey and not pdata.get(pkey):
                 pdata[pkey] = user.get(akey, "") or ""
@@ -164,9 +175,9 @@ class SyncEntra:
             self.get_plone_uuid(user["id"])
             for user in self._qm.get_all_users(properties=["id"])
         }
-        local_uuids = {
-            x for x in self._plugin_authomatic._useridentities_by_userid.keys()
-        }
+        local_uuids = set(
+            self._plugin_authomatic._useridentities_by_userid.keys()
+        )
         to_delete = local_uuids.difference(active_remote_uuids)
         for plone_uuid in to_delete:
             service_uuid = self.get_service_uuid(plone_uuid)

@@ -8,9 +8,9 @@ pipeline {
 
   stages {
 
-//     stage('Cosmetics') {
-//       steps {
-//         parallel(
+    stage('Cosmetics') {
+      steps {
+        parallel(
 
 //  This should be updated to pycodestyle as pep8 doesn't know about type hinting.
 //           "PEP8": {
@@ -21,17 +21,17 @@ pipeline {
 //             }
 //           },
 
-//           "PyLint": {
-//             node(label: 'docker') {
-//               script {
-//                 sh '''docker run -i --rm --name="$BUILD_TAG-pylint" -e GIT_SRC="https://github.com/eea/$GIT_NAME.git" -e GIT_NAME="$GIT_NAME" -e GIT_BRANCH="$BRANCH_NAME" -e GIT_CHANGE_ID="$CHANGE_ID" eeacms/pylint:py3'''
-//               }
-//             }
-//           }
+          "PyLint": {
+            node(label: 'docker') {
+              script {
+                sh '''docker run -i --rm --name="$BUILD_TAG-pylint" -e GIT_SRC="https://github.com/eea/$GIT_NAME.git" -e GIT_NAME="$GIT_NAME" -e GIT_BRANCH="$BRANCH_NAME" -e GIT_CHANGE_ID="$CHANGE_ID" eeacms/pylint:py3'''
+              }
+            }
+          }
 
-//         )
-//       }
-//     }
+        )
+      }
+    }
 
     stage('Code') {
       steps {

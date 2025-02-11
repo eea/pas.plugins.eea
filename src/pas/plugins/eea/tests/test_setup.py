@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """Setup tests for this package."""
+
+# pylint: disable=import-error,no-name-in-module,import-outside-toplevel
+
 import unittest
 
 from plone import api
@@ -45,6 +48,7 @@ class TestSetup(unittest.TestCase):
 
 
 class TestUninstall(unittest.TestCase):
+    """Test uninstall."""
 
     layer = PAS_PLUGINS_EEA_INTEGRATION_TESTING
 
