@@ -8,9 +8,9 @@ pipeline {
 
   stages {
 
-    stage('Cosmetics') {
-      steps {
-        parallel(
+//     stage('Cosmetics') {
+//       steps {
+//         parallel(
 
 //  This should be updated to pycodestyle as pep8 doesn't know about type hinting.
 //           "PEP8": {
@@ -29,9 +29,9 @@ pipeline {
 //             }
 //           }
 
-        )
-      }
-    }
+//         )
+//       }
+//     }
 
     stage('Code') {
       steps {
