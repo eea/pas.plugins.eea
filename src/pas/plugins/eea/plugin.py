@@ -324,8 +324,10 @@ class EEAEntraPlugin(BasePlugin):
         *args,
         **kw,
     ):
-        """This function wraps authomatic.enumerateUsers as well as mutable_properties.enumerateUsers.
-        The User_Enumerateion (enumerateUsers) functionality should be disabled for those two plugins.
+        """This function wraps authomatic.enumerateUsers as well as
+        mutable_properties.enumerateUsers.
+        The User_Enumeration (enumerateUsers) functionality should be disabled
+        for those two plugins.
         """
         if isinstance(id, list):
             # handle plone.restapi

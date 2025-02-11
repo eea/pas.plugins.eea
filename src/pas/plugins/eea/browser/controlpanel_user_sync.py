@@ -58,7 +58,10 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
             return
 
         count_users, count_groups, seconds, done = self.do_sync(data)
-        self.status = f"Synced {count_users} users and {count_groups} groups in {seconds} seconds ({done})"
+        self.status = (
+            f"Synced {count_users} users and {count_groups}"
+            f" groups in {seconds} seconds ({done})"
+        )
 
     @button.buttonAndHandler("Cancel")
     def handleCancel(self, action):

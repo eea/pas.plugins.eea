@@ -22,6 +22,8 @@ reqlogger.setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
+ENDPOINT_ENTRA = "https://login.microsoftonline.com"
+ENDPOINT_GRAPH_API = "https://graph.microsoft.com/v1.0"
 
 ApiUser = TypedDict(
     "ApiUser",
@@ -98,7 +100,7 @@ class QueryEntra:
         if QueryEntra._token_cache["expires"] > time():
             return QueryEntra._token_cache["access_token"]
 
-        url = f"https://login.microsoftonline.com/{self.config.domain}/oauth2/v2.0/token"
+        url = f"{ENDPOINT_ENTRA}/{self.config.domain}/oauth2/v2.0/token"
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
         data = {
@@ -171,18 +173,18 @@ class QueryEntra:
                 )
 
     def get_user(self, user_id) -> ApiUser:
-        url = f"https://graph.microsoft.com/v1.0/users/{user_id}"
+        url = f"{ENDPOINT_GRAPH_API}/users/{user_id}"
         data = self.get_url(url)
         return data.get("value") if data else None
 
     def get_all_users(self, properties=None) -> Iterator[ApiUser]:
-        url = "https://graph.microsoft.com/v1.0/users?$top=999"
+        url = "{ENDPOINT_GRAPH_API}/users?$top=999"
         if properties:
             url = f"{url}&$select={','.join(properties)}"
         return self.get_all(url)
 
     def search_users(self, query, properties=None) -> Iterator[ApiUser]:
-        url = "https://graph.microsoft.com/v1.0/users"
+        url = "{ENDPOINT_GRAPH_API}/users"
 
         custom_query = ""
 
@@ -201,20 +203,22 @@ class QueryEntra:
         return self.get_all(url, consistent=False)
 
     def get_user_groups(self, user_id) -> Iterator[ApiGroup]:
-        url = f"https://graph.microsoft.com/v1.0/users/{user_id}/memberOf/microsoft.graph.group?$top=999&$select=id"
+        base_url = f"{ENDPOINT_GRAPH_API}/users/{user_id}"
+        url = f"{base_url}/memberOf/microsoft.graph.group?$top=999&$select=id"
         return self.get_all(url)
 
     def get_group(self, group_id) -> ApiGroup:
-        url = f"https://graph.microsoft.com/v1.0/groups/{group_id}"
+        url = f"{ENDPOINT_GRAPH_API}/groups/{group_id}"
         data = self.get_url(url)
         return data.get("value") if data else None
 
     def get_all_groups(self) -> Iterator[ApiGroup]:
-        url = "https://graph.microsoft.com/v1.0/groups?$top=999"
+        url = "{ENDPOINT_GRAPH_API}/groups?$top=999"
         return self.get_all(url)
 
     def get_group_members(self, group_id) -> Iterator[ApiMember]:
-        url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members?$top=999&$select=id"
+        base_url = f"{ENDPOINT_GRAPH_API}/groups/{group_id}"
+        url = f"{base_url}/members?$top=999&$select=id"
         return self.get_all(url)
 
     def get_group_members_parallel(
@@ -222,7 +226,8 @@ class QueryEntra:
     ) -> Iterator[Union[str, ApiMember]]:
         futures = []
         for group_id in group_ids:
-            url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members?$top=999&$select=id"
+            base_url = f"{ENDPOINT_GRAPH_API}/groups/{group_id}"
+            url = f"{base_url}/members?$top=999&$select=id"
             f = self.get_url_future(url)
             f.group_id = group_id
             futures.append(f)

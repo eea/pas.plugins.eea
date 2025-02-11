@@ -24,7 +24,10 @@ with open(os.path.join("docs", "HISTORY.txt"), "r", encoding="utf-8") as hfile:
 setup(
     name=NAME,
     version=VERSION,
-    description="Provides user and group enumeration on top of pas.plugins.authomatic",
+    description=(
+        "Provides user and group enumeration"
+        " on top of pas.plugins.authomatic"
+    ),
     long_description_content_type="text/x-rst",
     long_description=LONG_DESCRIPTION,
     # Get more from https://pypi.org/classifiers/

@@ -108,12 +108,13 @@ class SyncEntra:
         )
 
     def get_service_uuid(self, plone_uuid):
+        storage = self._plugin_authomatic._userid_by_identityinfo.items()
         match = [
             service_uuid
             for (
                 name,
                 service_uuid,
-            ), p_uuid in self._plugin_authomatic._userid_by_identityinfo.items()
+            ), p_uuid in storage
             if p_uuid == plone_uuid and name == self._provider_name
         ]
         return match[0] if match else None
