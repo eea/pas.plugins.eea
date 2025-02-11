@@ -178,13 +178,13 @@ class QueryEntra:
         return data.get("value") if data else None
 
     def get_all_users(self, properties=None) -> Iterator[ApiUser]:
-        url = "{ENDPOINT_GRAPH_API}/users?$top=999"
+        url = f"{ENDPOINT_GRAPH_API}/users?$top=999"
         if properties:
             url = f"{url}&$select={','.join(properties)}"
         return self.get_all(url)
 
     def search_users(self, query, properties=None) -> Iterator[ApiUser]:
-        url = "{ENDPOINT_GRAPH_API}/users"
+        url = f"{ENDPOINT_GRAPH_API}/users"
 
         custom_query = ""
 
@@ -213,7 +213,7 @@ class QueryEntra:
         return data.get("value") if data else None
 
     def get_all_groups(self) -> Iterator[ApiGroup]:
-        url = "{ENDPOINT_GRAPH_API}/groups?$top=999"
+        url = f"{ENDPOINT_GRAPH_API}/groups?$top=999"
         return self.get_all(url)
 
     def get_group_members(self, group_id) -> Iterator[ApiMember]:
