@@ -1,6 +1,9 @@
-""" Control panel. """
+# pylint: disable=invalid-name
+# pylint: disable=inherit-non-class
+# pylint: disable=too-many-ancestors
+# pylint: disable=missing-function-docstring
 
-# pylint: disable=invalid-name,inherit-non-class,too-many-ancestors
+""" Control panel. """
 
 from datetime import datetime
 from logging import getLogger
