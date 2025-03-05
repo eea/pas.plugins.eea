@@ -61,6 +61,10 @@ After enabling the product in Site Setup -> Add-ons, make sure to:
     - User_Enumeration (this is handled by `eea_entra` - the `login` property is set to the user email)
 - In acl_users -> plugins -> Properties Plugins make sure that `eea_entra` is at the top of the list of "Active Plugins".
 
+# EEA specifics
+
+- https://taskman.eionet.europa.eu/projects/infrastructure/wiki/Authentication_with_Entra_ID_in_Plone
+
 # Contribute
 
 - Issue Tracker: https://github.com/eea/pas.plugins.eea/issues
