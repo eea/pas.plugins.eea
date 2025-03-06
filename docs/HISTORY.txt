@@ -1,6 +1,9 @@
 Changelog
 =========
 
+1.2-dev0 - (unreleased)
+---------------------------
+
 1.1 - (2025-03-06)
 ---------------------------
 * Change: Update README.md [alecghica]
