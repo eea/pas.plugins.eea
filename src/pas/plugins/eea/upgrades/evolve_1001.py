@@ -1,8 +1,11 @@
+""" Migration step.
+"""
+
+# pylint: disable=import-error,no-name-in-module,protected-access
+
 import logging
 
 from BTrees.OOBTree import OOBTree  # noqa
-
-import plone.api as api
 
 from pas.plugins.eea.sync import SyncEntra
 from pas.plugins.eea.utils import get_plugin
@@ -11,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def run(_):
+    """Run migration."""
     plugin = get_plugin()
 
     # add missing _user_types

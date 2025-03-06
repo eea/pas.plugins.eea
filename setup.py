@@ -1,22 +1,35 @@
-# -*- coding: utf-8 -*-
-"""Installer for the pas.plugins.eea package."""
+""" pas.plugins.eea Installer
+"""
 
-from setuptools import find_packages, setup
+import os
+from os.path import join
 
-long_description = "\n\n".join(
-    [
-        open("README.md").read(),
-        open("CONTRIBUTORS.md").read(),
-        open("CHANGES.md").read(),
-    ]
-)
+from setuptools import find_packages
+from setuptools import setup
+
+NAME = "pas.plugins.eea"
+PATH = ["src"] + NAME.split(".") + ["version.txt"]
+VERSION = ""
+with open(join(*PATH), "r", encoding="utf-8") as version_file:
+    VERSION = version_file.read().strip()
+
+LONG_DESCRIPTION = ""
+with open("README.rst", "r", encoding="utf-8") as readme_file:
+    LONG_DESCRIPTION = readme_file.read()
+
+with open(os.path.join("docs", "HISTORY.txt"), "r", encoding="utf-8") as hfile:
+    LONG_DESCRIPTION += "\n" + hfile.read()
 
 
 setup(
-    name="pas.plugins.eea",
-    version="1.0a1",
-    description="Provides user and group enumeration on top of pas.plugins.authomatic",
-    long_description=long_description,
+    name=NAME,
+    version=VERSION,
+    description=(
+        "Provides user and group enumeration"
+        " on top of pas.plugins.authomatic"
+    ),
+    long_description_content_type="text/x-rst",
+    long_description=LONG_DESCRIPTION,
     # Get more from https://pypi.org/classifiers/
     classifiers=[
         "Environment :: Web Environment",
@@ -30,9 +43,9 @@ setup(
         "Operating System :: OS Independent",
         "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     ],
-    keywords="Python Plone CMS",
-    author="David Bătrânu",
-    author_email="david.batranu@eaudeweb.ro",
+    keywords="EEA Add-ons Plone Zope",
+    author="European Environment Agency: IDM2 A-Team",
+    author_email="eea-edw-a-team-alerts@googlegroups.com",
     url="https://github.com/collective/pas.plugins.eea",
     project_urls={
         "PyPI": "https://pypi.org/project/pas.plugins.eea/",

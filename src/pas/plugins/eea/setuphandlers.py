@@ -1,4 +1,16 @@
 # -*- coding: utf-8 -*-
+
+# pylint: disable=import-error
+# pylint: disable=no-name-in-module
+# pylint: disable=protected-access
+# pylint: disable=missing-function-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=invalid-name
+# pylint: disable=useless-object-inheritance
+# pylint: disable=inconsistent-return-statements
+# pylint: disable=missing-module-docstring
+
+
 from zope.interface import implementer
 
 try:

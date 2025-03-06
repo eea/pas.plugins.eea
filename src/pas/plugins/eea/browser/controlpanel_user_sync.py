@@ -1,3 +1,10 @@
+# pylint: disable=invalid-name
+# pylint: disable=inherit-non-class
+# pylint: disable=too-many-ancestors
+# pylint: disable=missing-function-docstring
+
+""" Control panel. """
+
 from datetime import datetime
 from logging import getLogger
 from operator import methodcaller
@@ -17,6 +24,8 @@ logger = getLogger(__name__)
 
 
 class IUserSyncForm(Interface):
+    """Sync form definition."""
+
     add_new_users = schema.Bool(
         title="Add new users",
         default=True,
@@ -45,6 +54,8 @@ class IUserSyncForm(Interface):
 
 
 class UserSyncForm(AutoExtensibleForm, form.EditForm):
+    """Sync form."""
+
     schema = IUserSyncForm
     ignoreContext = True
 
@@ -58,10 +69,13 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
             return
 
         count_users, count_groups, seconds, done = self.do_sync(data)
-        self.status = f"Synced {count_users} users and {count_groups} groups in {seconds} seconds ({done})"
+        self.status = (
+            f"Synced {count_users} users and {count_groups}"
+            f" groups in {seconds} seconds ({done})"
+        )
 
     @button.buttonAndHandler("Cancel")
-    def handleCancel(self, action):
+    def handleCancel(self, _action):
         """User cancelled. Redirect back to the front page."""
         nav_root_url = api.portal.get_navigation_root(
             self.context
@@ -70,6 +84,7 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
         return self.request.response.redirect(url_control_panel)
 
     def do_sync(self, data):
+        """Start the sync."""
         t0 = datetime.now()
         syncer = SyncEntra()
 
@@ -103,4 +118,6 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
 
 
 class UserSyncControlPanel(controlpanel.ControlPanelFormWrapper):
+    """Control panel form wrapper."""
+
     form = UserSyncForm
