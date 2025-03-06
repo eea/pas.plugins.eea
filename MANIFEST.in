@@ -1,7 +1,7 @@
-graft src/pas.plugins
+include *.md *.rst *.txt
 graft docs
-include *.rst
-exclude tox.ini
-exclude *.txt
-exclude .gitlab-ci.yml
-global-exclude *.pyc
+graft src
+global-exclude *pyc
+global-exclude *~
+global-exclude *.un~
+global-include *.mo
