@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.1 - (2025-03-06)
+---------------------------
+* Change: Update README.md [alecghica]
+
 1.0a1 - (unreleased)
 ---------------------------
 * Task: Initial release
