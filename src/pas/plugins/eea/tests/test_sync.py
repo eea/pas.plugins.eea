@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """ Setup tests for this package. """
 
-# pylint: disable=anomalous-backslash-in-string,unspecified-encoding,protected-access,import-error,no-name-in-module,import-outside-toplevel
+# pylint: disable=anomalous-backslash-in-string,protected-access,import-error,no-name-in-module,import-outside-toplevel
 
 
 import os
@@ -94,7 +94,8 @@ class TestSync(unittest.TestCase):
 
         with open(CONFIG_PATH, "r") as authomatic_config:
             registry[
-                "pas.plugins.authomatic.interfaces.IPasPluginsAuthomaticSettings.json_config"
+                "pas.plugins.authomatic.interfaces"
+                ".IPasPluginsAuthomaticSettings.json_config"
             ] = authomatic_config.read()
 
     @responses.activate
