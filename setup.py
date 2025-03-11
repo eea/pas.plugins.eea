@@ -86,5 +86,6 @@ setup(
     target = plone
     [console_scripts]
     update_locale = pas.plugins.eea.locales.update:update_locale
+    sync_eea_entra = pas.plugins.eea.scripts.sync:run_standalone
     """,
 )
