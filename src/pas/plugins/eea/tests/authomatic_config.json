@@ -1,0 +1,35 @@
+{
+    "microsoft": {
+        "id": 1,
+        "scope": ["User.ReadBasic.All"],
+        "domain": "mock.entra.domain.local",
+        "display": {
+            "title": "EEA Microsoft Entra",
+            "cssclasses": {
+                "button": "plone-btn plone-btn-default",
+                "icon": "glypicon glyphicon-microsoft"
+            },
+            "as_form": false
+        },
+        "propertymap": {
+            "id": "id",
+            "mail": "email",
+            "country": "location",
+            "name": "fullname",
+            "username": "email"
+        },
+        "sync_propertymap": {
+            "id": "id",
+            "mail": "email",
+            "country": "location",
+            "displayName": "fullname",
+            "userPrincipalName": "email"
+        },
+        "class_": "authomatic.providers.oauth2.MicrosoftOnline",
+        "consumer_key": "mock-key",
+        "consumer_secret": "mock-secret",
+        "access_headers": {
+            "User-Agent": "Plone (pas.plugins.authomatic)"
+        }
+    }
+}
