@@ -60,7 +60,7 @@ USER_RESPONSE = {
     },
 }
 
-ENDPOINT_GRAPH_API_FOR_RE = ENDPOINT_GRAPH_API.replace('.', '\.')
+ENDPOINT_GRAPH_API_FOR_RE = ENDPOINT_GRAPH_API.replace(".", "\.")
 ENDPOINT_GRAPH_API_USERS_RE = "users\?\$top=999.*"
 USERS_RESPONSE = {
     "url": re.compile(
