@@ -62,17 +62,17 @@ pipeline {
       steps {
         parallel(
 
-          "WWW": {
+          "Coverage": {
             node(label: 'docker') {
               script {
                 try {
-                  sh '''docker run -i --name="$BUILD_TAG-www" -e GIT_NAME="$GIT_NAME" -e GIT_BRANCH="$BRANCH_NAME" -e ADDONS="$GIT_NAME" -e DEVELOP="src/$GIT_NAME" -e GIT_CHANGE_ID="$CHANGE_ID" eeacms/www-devel /debug.sh coverage'''
-                  sh '''mkdir -p xunit-reports; docker cp $BUILD_TAG-www:/plone/instance/parts/xmltestreport/testreports/. xunit-reports/'''
+                  sh '''docker pull eeacms/plone-test:5-python3'''
+                  sh '''docker run -i --rm --name="$BUILD_TAG-python3" -e GIT_BRANCH="$BRANCH_NAME" -e ADDONS="$GIT_NAME[test]" -e DEVELOP="src/$GIT_NAME" -e GIT_CHANGE_ID="$CHANGE_ID" eeacms/plone-test:5-python3 -v -vv -s $GIT_NAME'''                  sh '''mkdir -p xunit-reports; docker cp $BUILD_TAG-www:/plone/instance/parts/xmltestreport/testreports/. xunit-reports/'''
                   stash name: "xunit-reports", includes: "xunit-reports/*.xml"
-                  sh '''docker cp $BUILD_TAG-www:/plone/instance/src/$GIT_NAME/coverage.xml coverage.xml'''
+                  sh '''docker cp $BUILD_TAG-python3:/plone/instance/src/$GIT_NAME/coverage.xml coverage.xml'''
                   stash name: "coverage.xml", includes: "coverage.xml"
                 } finally {
-                  sh '''docker rm -v $BUILD_TAG-www'''
+                  sh '''docker rm -v $BUILD_TAG-python3'''
                 }
                 junit 'xunit-reports/*.xml'
               }
@@ -101,7 +101,7 @@ pipeline {
           "Plone5 & Python3": {
             node(label: 'docker') {
               sh '''docker pull eeacms/plone-test:5-python3'''
-              sh '''docker run -i --rm --name="$BUILD_TAG-python3" -e GIT_BRANCH="$BRANCH_NAME" -e ADDONS="$GIT_NAME[test]" -e DEVELOP="src/$GIT_NAME" -e GIT_CHANGE_ID="$CHANGE_ID" eeacms/plone-test:5-python3 -v -vv -s $GIT_NAME'''
+              sh '''docker run -i --rm --name="$BUILD_TAG-python3" -e GIT_BRANCH="$BRANCH_NAME" -e ADDONS="$GIT_NAME[test]" -e DEVELOP="src/$GIT_NAME" -e GIT_CHANGE_ID="$CHANGE_ID" -e VERSIONS="requests>=2.30.0,<3.0" eeacms/plone-test:5-python3 -v -vv -s $GIT_NAME'''
             }
           },
 
