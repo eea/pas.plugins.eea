@@ -3,6 +3,8 @@ Changelog
 
 1.2-dev0 - (unreleased)
 ---------------------------
+* Task: EEA Entra ID regular sync script
+  [david-batranu - refs #284052]
 
 1.1 - (2025-03-06)
 ---------------------------
