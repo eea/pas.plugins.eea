@@ -32,6 +32,10 @@ parser.add_argument(
 
 
 def run_standalone():
+    """Run the sync script standalone.
+
+    Initialization copied from zconsole run.
+    """
     parser.add_argument(
         "--zope-conf",
         dest="zope_conf",
@@ -49,6 +53,11 @@ def run_standalone():
 
 
 def run(app):
+    """Run the sync script.
+
+    Normally this would be called from zconsole run, but that command does not
+    pass on script arguments, so there is no way to specify the portal id.
+    """
     args = parser.parse_args()
     portal = app[args.portal_id]
     setSite(portal)
