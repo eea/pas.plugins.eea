@@ -86,6 +86,21 @@ After enabling the product in Site Setup -> Add-ons, make sure to:
 -  In acl_users -> plugins -> Properties Plugins make sure that
    ``eea_entra`` is at the top of the list of “Active Plugins”.
 
+CRON
+====
+
+A script is provided to sync users and groups from Entra ID.
+The script is located in ``pas/plugins/eea/scripts/sync.py`` and
+registered in setup.py as a console script.
+
+It can be called from the command line like this::
+
+    sync_eea_entra --portal PLONE_PORTAL_ID --zope-conf /path/to/zope.conf
+
+The script initializes itself the same way ``zconsole run`` would.
+It cannot be called with ``zconsole run`` as that command does not pass on script arguments,
+so there is no way to specify the portal id.
+
 EEA specifics
 =============
 
