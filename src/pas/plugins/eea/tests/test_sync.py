@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 """ Setup tests for this package. """
+
+# pylint: disable=anomalous-backslash-in-string,unspecified-encoding,protected-access,import-error,no-name-in-module,import-outside-toplevel
+
+
 import os
 import re
 import unittest
@@ -19,8 +23,6 @@ from pas.plugins.eea.testing import (  # noqa: E501
 )
 from pas.plugins.eea.utils import get_authomatic_plugin
 from pas.plugins.eea.utils import get_plugin
-
-# pylint: disable=import-error,no-name-in-module,import-outside-toplevel
 
 try:
     from Products.CMFPlone.utils import get_installer
