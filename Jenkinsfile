@@ -75,7 +75,7 @@ pipeline {
                 } finally {
                   sh '''docker rm -v $BUILD_TAG-python3'''
                 }
-                junit 'xunit-reports/*.xml'
+//                 junit 'xunit-reports/*.xml'
               }
             }
           },
