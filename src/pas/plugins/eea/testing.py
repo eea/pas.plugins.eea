@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=all
 
-from plone.app.robotframework.testing import REMOTE_LIBRARY_BUNDLE_FIXTURE
 from plone.app.testing import PLONE_FIXTURE
 from plone.app.testing import FunctionalTesting
 from plone.app.testing import IntegrationTesting
 from plone.app.testing import PloneSandboxLayer
 from plone.app.testing import applyProfile
-from plone.testing import z2
 
 import pas.plugins.eea
 
@@ -44,14 +42,4 @@ PAS_PLUGINS_EEA_INTEGRATION_TESTING = IntegrationTesting(
 PAS_PLUGINS_EEA_FUNCTIONAL_TESTING = FunctionalTesting(
     bases=(PAS_PLUGINS_EEA_FIXTURE,),
     name="PasPluginsEeaLayer:FunctionalTesting",
-)
-
-
-PAS_PLUGINS_EEA_ACCEPTANCE_TESTING = FunctionalTesting(
-    bases=(
-        PAS_PLUGINS_EEA_FIXTURE,
-        REMOTE_LIBRARY_BUNDLE_FIXTURE,
-        z2.ZSERVER_FIXTURE,
-    ),
-    name="PasPluginsEeaLayer:AcceptanceTesting",
 )
