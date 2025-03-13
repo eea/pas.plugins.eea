@@ -3,7 +3,7 @@ pipeline {
 
   environment {
         GIT_NAME = "pas.plugins.eea"
-        SONARQUBE_TAGS = "www.eea.europa.eu,demo-www.eea.europa.eu"
+        SONARQUBE_TAGS = "www.eea.europa.eu,demo-www.eea.europa.eu,climate-advisory-board.europa.eu"
     }
 
   stages {
