@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.4 - (2025-04-25)
+---------------------------
+* Change: Commit transaction at end of sync
+  [david-batranu]
+
 1.3 - (2025-03-12)
 ---------------------------
 * Change: Tests + coverage
