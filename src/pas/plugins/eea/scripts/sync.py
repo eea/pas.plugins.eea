@@ -4,6 +4,7 @@ import argparse
 import logging
 from datetime import datetime
 
+import transaction
 import Zope2
 from AccessControl.SecurityManagement import newSecurityManager
 from AccessControl.users import system as system_user
@@ -68,6 +69,8 @@ def run(app):
     t0 = datetime.now()
     syncer.sync_all()
     seconds = (datetime.now() - t0).total_seconds()
+    logger.info("Transaction commit...")
+    transaction.commit()
     logger.info("...sync complete after %s seconds.", seconds)
 
 
