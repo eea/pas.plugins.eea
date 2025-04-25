@@ -1,6 +1,9 @@
 Changelog
 =========
 
+1.5-dev0 - (unreleased)
+---------------------------
+
 1.4 - (2025-04-25)
 ---------------------------
 * Change: Commit transaction at end of sync
