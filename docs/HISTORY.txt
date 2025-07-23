@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.5 - (2025-07-23)
+---------------------------
+* Change: Update documentation
+  [alecghica]
+
 1.4 - (2025-04-25)
 ---------------------------
 * Change: Commit transaction at end of sync

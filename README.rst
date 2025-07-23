@@ -77,6 +77,7 @@ After enabling the product in Site Setup -> Add-ons, make sure to:
       -  User_Management (to disable the remove checkboxes, as Entra
          users cannot be deleted from Plone)
       -  Properties (to add “External” emoji)
+      -  User_Ader
 
    -  ``mutable_properties``:
 
