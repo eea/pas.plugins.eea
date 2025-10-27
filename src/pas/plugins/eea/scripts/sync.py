@@ -1,4 +1,4 @@
-""" Sync users. """
+"""Sync users."""
 
 import argparse
 import logging

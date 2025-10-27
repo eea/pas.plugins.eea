@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-""" Setup tests for this package. """
-
-
+"""Setup tests for this package."""
 
 import os
 import re
@@ -64,9 +62,7 @@ USER_RESPONSE = {
 ENDPOINT_GRAPH_API_FOR_RE = ENDPOINT_GRAPH_API.replace(".", "\.")
 ENDPOINT_GRAPH_API_USERS_RE = "users\?\$top=999.*"
 USERS_RESPONSE = {
-    "url": re.compile(
-        rf"{ENDPOINT_GRAPH_API_FOR_RE}/{ENDPOINT_GRAPH_API_USERS_RE}"
-    ),
+    "url": re.compile(rf"{ENDPOINT_GRAPH_API_FOR_RE}/{ENDPOINT_GRAPH_API_USERS_RE}"),
     "body": {"value": [USER_RESPONSE["body"]["value"]]},
 }
 
@@ -139,10 +135,5 @@ class TestSync(unittest.TestCase):
         )
         assert len(self.authomatic_plugin._useridentities_by_userid) == 1
 
-        uis = list(
-            self.authomatic_plugin._useridentities_by_userid.itervalues()
-        )[-1]
-        assert (
-            uis._sheet.getProperty("email")
-            == USER_RESPONSE["body"]["value"]["mail"]
-        )
+        uis = list(self.authomatic_plugin._useridentities_by_userid.itervalues())[-1]
+        assert uis._sheet.getProperty("email") == USER_RESPONSE["body"]["value"]["mail"]

@@ -1,5 +1,4 @@
-""" pas.plugins.eea Installer
-"""
+"""pas.plugins.eea Installer"""
 
 import os
 from os.path import join
@@ -25,8 +24,7 @@ setup(
     name=NAME,
     version=VERSION,
     description=(
-        "Provides user and group enumeration"
-        " on top of pas.plugins.authomatic"
+        "Provides user and group enumeration on top of pas.plugins.authomatic"
     ),
     long_description_content_type="text/x-rst",
     long_description=LONG_DESCRIPTION,

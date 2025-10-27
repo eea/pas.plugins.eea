@@ -1,5 +1,4 @@
-
-""" Handle synchronization. """
+"""Handle synchronization."""
 
 import logging
 import uuid
@@ -54,7 +53,6 @@ class MockAuthResult:
 
 
 class SyncEntra:
-
     _cfg: dict = None
 
     _acl: PluggableAuthService = None
@@ -99,15 +97,11 @@ class SyncEntra:
             user = self._acl._createUser(
                 self._acl.plugins, plone_uuid, email or plone_uuid
             )
-            self._plugin_mutable_properties.setPropertiesForUser(
-                user, property_sheet
-            )
+            self._plugin_mutable_properties.setPropertiesForUser(user, property_sheet)
 
     def get_plone_uuid(self, service_uuid):
         plone_key = (self._provider_name, service_uuid)
-        return self._plugin_authomatic._userid_by_identityinfo.get(
-            plone_key, None
-        )
+        return self._plugin_authomatic._userid_by_identityinfo.get(plone_key, None)
 
     def get_service_uuid(self, plone_uuid):
         storage = self._plugin_authomatic._userid_by_identityinfo.items()
@@ -167,9 +161,7 @@ class SyncEntra:
             self.get_plone_uuid(user["id"])
             for user in self._qm.get_all_users(properties=["id"])
         }
-        local_uuids = set(
-            self._plugin_authomatic._useridentities_by_userid.keys()
-        )
+        local_uuids = set(self._plugin_authomatic._useridentities_by_userid.keys())
         to_delete = local_uuids.difference(active_remote_uuids)
         for plone_uuid in to_delete:
             service_uuid = self.get_service_uuid(plone_uuid)
@@ -194,9 +186,7 @@ class SyncEntra:
                 continue
             plone_uuid = self.get_plone_uuid(user["id"])
             if plone_uuid:
-                uis = self._plugin_authomatic._useridentities_by_userid[
-                    plone_uuid
-                ]
+                uis = self._plugin_authomatic._useridentities_by_userid[plone_uuid]
                 uis._sheet = self._create_property_sheet(plone_uuid, user)
                 self._update_mutable_properties(plone_uuid, uis._sheet)
                 self._plugin_eea._user_types[plone_uuid] = user["userType"]
@@ -232,14 +222,10 @@ class SyncEntra:
             else:
                 if item["@odata.type"] == "#microsoft.graph.user":
                     plone_uuid = self.get_plone_uuid(item["id"])
-                    self._plugin_eea._ad_group_members[group_id].add(
-                        plone_uuid
-                    )
+                    self._plugin_eea._ad_group_members[group_id].add(plone_uuid)
                     self.remember_user_group(plone_uuid, group_id)
                 elif item["@odata.type"] == "#microsoft.graph.group":
-                    self._plugin_eea._ad_group_members[group_id].add(
-                        item["id"]
-                    )
+                    self._plugin_eea._ad_group_members[group_id].add(item["id"])
                     self.remember_user_group(item["id"], group_id)
 
     def sync_all(self):

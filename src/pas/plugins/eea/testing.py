@@ -10,7 +10,6 @@ import pas.plugins.eea
 
 
 class PasPluginsEeaLayer(PloneSandboxLayer):
-
     defaultBases = (PLONE_FIXTURE,)
 
     def setUpZope(self, app, configurationContext):

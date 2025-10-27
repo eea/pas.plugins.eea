@@ -1,5 +1,4 @@
-""" Migration step.
-"""
+"""Migration step."""
 
 import logging
 
