@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=too-many-ancestors
 
 """Module where all interfaces, events and exceptions live."""
 

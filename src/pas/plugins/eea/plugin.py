@@ -1,22 +1,3 @@
-# pylint: disable=import-error
-# pylint: disable=no-name-in-module
-# pylint: disable=protected-access
-# pylint: disable=missing-function-docstring
-# pylint: disable=missing-class-docstring
-# pylint: disable=invalid-name
-# pylint: disable=useless-object-inheritance
-# pylint: disable=inconsistent-return-statements
-# pylint: disable=abstract-method
-# pylint: disable=redefined-builtin
-# pylint: disable=unused-argument
-# pylint: disable=unused-variable
-# pylint: disable=unnecessary-comprehension
-# pylint: disable=keyword-arg-before-vararg
-# pylint: disable=no-else-return
-# pylint: disable=unnecessary-pass
-# pylint: disable=too-many-ancestors
-# pylint: disable=inconsistent-mro
-
 """  EEAEntraPlugin. """
 
 import logging

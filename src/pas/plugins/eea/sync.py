@@ -1,11 +1,3 @@
-# pylint: disable=import-error
-# pylint: disable=no-name-in-module
-# pylint: disable=protected-access
-# pylint: disable=missing-function-docstring
-# pylint: disable=missing-class-docstring
-# pylint: disable=too-many-instance-attributes
-# pylint: disable=ungrouped-imports
-# pylint: disable=too-few-public-methods
 
 """ Handle synchronization. """
 

@@ -1,8 +1,3 @@
-# pylint: disable=invalid-name
-# pylint: disable=inherit-non-class
-# pylint: disable=too-many-ancestors
-# pylint: disable=missing-function-docstring
-
 """ Control panel. """
 
 from datetime import datetime

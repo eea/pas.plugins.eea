@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Setup tests for this package."""
 
-# pylint: disable=import-error,no-name-in-module,import-outside-toplevel
 
 import unittest
 

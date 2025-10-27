@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=all
 
 import os
 import subprocess

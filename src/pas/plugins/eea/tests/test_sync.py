@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """ Setup tests for this package. """
 
-# pylint: disable=anomalous-backslash-in-string,protected-access,import-error,no-name-in-module,import-outside-toplevel
 
 
 import os

@@ -1,5 +1,3 @@
-# pylint: disable=missing-function-docstring
-
 """ Query remote endpoint and fetch data.
 """
 
