@@ -1,9 +1,4 @@
-# pylint: disable=invalid-name
-# pylint: disable=inherit-non-class
-# pylint: disable=too-many-ancestors
-# pylint: disable=missing-function-docstring
-
-""" Control panel. """
+"""Control panel."""
 
 from datetime import datetime
 from logging import getLogger
@@ -77,9 +72,7 @@ class UserSyncForm(AutoExtensibleForm, form.EditForm):
     @button.buttonAndHandler("Cancel")
     def handleCancel(self, _action):
         """User cancelled. Redirect back to the front page."""
-        nav_root_url = api.portal.get_navigation_root(
-            self.context
-        ).absolute_url()
+        nav_root_url = api.portal.get_navigation_root(self.context).absolute_url()
         url_control_panel = f"{nav_root_url}/@@overview-controlpanel"
         return self.request.response.redirect(url_control_panel)
 

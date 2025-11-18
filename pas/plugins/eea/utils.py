@@ -1,4 +1,4 @@
-""" Utils. """
+"""Utils."""
 
 import typing
 
@@ -29,9 +29,6 @@ def get_authomatic_plugin() -> "AuthomaticPlugin":
 def get_provider_name(cfg, default="microsoft"):
     """Returns the configured provider name. Default is "microsoft"."""
     for name, settings in cfg.items():
-        if (
-            settings.get("class_")
-            == "authomatic.providers.oauth2.MicrosoftOnline"
-        ):
+        if settings.get("class_") == "authomatic.providers.oauth2.MicrosoftOnline":
             return name
     return default

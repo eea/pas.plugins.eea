@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=all
 
 import os
 import subprocess
@@ -9,7 +8,7 @@ import pkg_resources
 domain = "pas.plugins.eea"
 os.chdir(pkg_resources.resource_filename(domain, ""))
 os.chdir("../../../")
-target_path = "src/pas.plugins/eea/"
+target_path = "pas.plugins/eea/"
 locale_path = target_path + "locales/"
 i18ndude = "./bin/i18ndude"
 
