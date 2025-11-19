@@ -1,5 +1,4 @@
-""" pas.plugins.eea Installer
-"""
+"""pas.plugins.eea Installer"""
 
 import os
 from os.path import join
@@ -8,7 +7,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 NAME = "pas.plugins.eea"
-PATH = ["src"] + NAME.split(".") + ["version.txt"]
+PATH = NAME.split(".") + ["version.txt"]
 VERSION = ""
 with open(join(*PATH), "r", encoding="utf-8") as version_file:
     VERSION = version_file.read().strip()
@@ -25,8 +24,7 @@ setup(
     name=NAME,
     version=VERSION,
     description=(
-        "Provides user and group enumeration"
-        " on top of pas.plugins.authomatic"
+        "Provides user and group enumeration on top of pas.plugins.authomatic"
     ),
     long_description_content_type="text/x-rst",
     long_description=LONG_DESCRIPTION,
@@ -54,9 +52,9 @@ setup(
         # 'Documentation': 'https://pas.plugins.eea.readthedocs.io/en/latest/',
     },
     license="GPL version 2",
-    packages=find_packages("src", exclude=["ez_setup"]),
+    packages=find_packages(".", exclude=["ez_setup"]),
     namespace_packages=["pas", "pas.plugins"],
-    package_dir={"": "src"},
+    package_dir={"": "."},
     include_package_data=True,
     zip_safe=False,
     python_requires=">=3.7",

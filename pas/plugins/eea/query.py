@@ -1,7 +1,4 @@
-# pylint: disable=missing-function-docstring
-
-""" Query remote endpoint and fetch data.
-"""
+"""Query remote endpoint and fetch data."""
 
 import logging
 from concurrent.futures import as_completed
@@ -122,9 +119,7 @@ class QueryEntra:
         response = requests.post(url, headers=headers, data=data, timeout=10)
         token_data = response.json()
 
-        QueryEntra._token_cache = {
-            "expires": time() + token_data["expires_in"] - 60
-        }
+        QueryEntra._token_cache = {"expires": time() + token_data["expires_in"] - 60}
         QueryEntra._token_cache.update(token_data)
         return QueryEntra._token_cache["access_token"]
 
@@ -175,9 +170,7 @@ class QueryEntra:
 
     def get_all(self, url, consistent=True, extra_headers=None):
         """Get all pages from the endpoint URL."""
-        data = self.get_url(
-            url, consistent=consistent, extra_headers=extra_headers
-        )
+        data = self.get_url(url, consistent=consistent, extra_headers=extra_headers)
         if data:
             yield from data.get("value", [data])
             next_url = data.get("@odata.nextLink")

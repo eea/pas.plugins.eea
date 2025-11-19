@@ -1,7 +1,4 @@
-""" Migration step.
-"""
-
-# pylint: disable=import-error,no-name-in-module,protected-access
+"""Migration step."""
 
 import logging
 

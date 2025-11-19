@@ -1,23 +1,4 @@
-# pylint: disable=import-error
-# pylint: disable=no-name-in-module
-# pylint: disable=protected-access
-# pylint: disable=missing-function-docstring
-# pylint: disable=missing-class-docstring
-# pylint: disable=invalid-name
-# pylint: disable=useless-object-inheritance
-# pylint: disable=inconsistent-return-statements
-# pylint: disable=abstract-method
-# pylint: disable=redefined-builtin
-# pylint: disable=unused-argument
-# pylint: disable=unused-variable
-# pylint: disable=unnecessary-comprehension
-# pylint: disable=keyword-arg-before-vararg
-# pylint: disable=no-else-return
-# pylint: disable=unnecessary-pass
-# pylint: disable=too-many-ancestors
-# pylint: disable=inconsistent-mro
-
-"""  EEAEntraPlugin. """
+"""EEAEntraPlugin."""
 
 import logging
 from operator import attrgetter
@@ -91,9 +72,7 @@ class EEAEntraGroupData(VirtualGroup):
 
     def getRoles(self):
         result = set()
-        rolemakers = self._getPlugins().listPlugins(
-            pas_interfaces.IRolesPlugin
-        )
+        rolemakers = self._getPlugins().listPlugins(pas_interfaces.IRolesPlugin)
         for rolemaker_id, rolemaker in rolemakers:
             roles = rolemaker.getRolesForPrincipal(self)
             if roles:
@@ -191,9 +170,7 @@ class EEAEntraPlugin(BasePlugin):
 
     @security.private
     def setRolesForGroup(self, group_id, roles=()):
-        rmanagers = self._getPlugins().listPlugins(
-            pas_interfaces.IRoleAssignerPlugin
-        )
+        rmanagers = self._getPlugins().listPlugins(pas_interfaces.IRoleAssignerPlugin)
         if not rmanagers:
             raise NotImplementedError(
                 "There is no plugin that can assign roles to groups"
@@ -286,9 +263,7 @@ class EEAEntraPlugin(BasePlugin):
 
         elif id:
             query = id.lower()
-            result = [
-                g for g in self.savedGroups() if query in g["title"].lower()
-            ]
+            result = [g for g in self.savedGroups() if query in g["title"].lower()]
 
         return result
 
@@ -312,9 +287,7 @@ class EEAEntraPlugin(BasePlugin):
 
         return found
 
-    def _enumerate_zodb_mutable_properties(
-        self, id=None, login=None, *args, **kw
-    ):
+    def _enumerate_zodb_mutable_properties(self, id=None, login=None, *args, **kw):
         plugin = self._getPAS().mutable_properties
         found = plugin.enumerateUsers(id, login, *args, **kw)
 
@@ -359,9 +332,7 @@ class EEAEntraPlugin(BasePlugin):
             login = "".join(login)
 
         if id is login is None:
-            return self._enumerate_zodb_mutable_properties(
-                id, login, *args, **kw
-            )
+            return self._enumerate_zodb_mutable_properties(id, login, *args, **kw)
 
         else:
             return self._enumerate_authomatic(id, login, *args, **kw)

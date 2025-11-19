@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=all
 
 from plone.app.testing import PLONE_FIXTURE
 from plone.app.testing import FunctionalTesting
@@ -11,7 +10,6 @@ import pas.plugins.eea
 
 
 class PasPluginsEeaLayer(PloneSandboxLayer):
-
     defaultBases = (PLONE_FIXTURE,)
 
     def setUpZope(self, app, configurationContext):
