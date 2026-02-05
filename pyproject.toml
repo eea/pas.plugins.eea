@@ -69,3 +69,7 @@ known_plone = ["plone", "collective"]
 
 [tool.black]
 line-length = 79
+
+[tool.pytest.ini_options]
+testpaths = ["src"]
+pythonpath = ["src"]
