@@ -2,6 +2,7 @@
 
 import os
 from os.path import join
+from pathlib import Path
 
 from setuptools import find_packages
 from setuptools import setup
@@ -21,6 +22,34 @@ with open("README.rst", "r", encoding="utf-8") as readme_file:
 
 with open(os.path.join("docs", "HISTORY.txt"), "r", encoding="utf-8") as hfile:
     LONG_DESCRIPTION += "\n" + hfile.read()
+
+
+DATA_EXTENSIONS = {
+    ".zcml",
+    ".pt",
+    ".xml",
+    ".po",
+    ".pot",
+    ".mo",
+    ".json",
+    ".txt",
+    ".rst",
+    ".cfg",
+    ".sh",
+}
+
+
+def get_package_data(package_root):
+    package_dir = Path(package_root) / "pas" / "plugins" / "eea"
+    if not package_dir.exists():
+        return []
+    files = []
+    for path in package_dir.rglob("*"):
+        if not path.is_file():
+            continue
+        if path.suffix in DATA_EXTENSIONS:
+            files.append(str(path.relative_to(package_dir)))
+    return files
 
 
 setup(
@@ -59,6 +88,9 @@ setup(
     namespace_packages=["pas", "pas.plugins"],
     package_dir={"": PACKAGE_ROOT},
     include_package_data=True,
+    package_data={
+        "pas.plugins.eea": get_package_data(PACKAGE_ROOT),
+    },
     zip_safe=False,
     python_requires=">=3.7",
     install_requires=[
