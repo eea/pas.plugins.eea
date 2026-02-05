@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.7 - (2026-02-05)
+---------------------------
+* Fix: Ensure browser and upgrades packages are importable (add missing __init__.py).
+  [dobri1408]
+* Fix: Align setup.py with standard packaging and rely on MANIFEST.in for data files.
+  [dobri1408]
+
 1.6 - (2025-11-18)
 ---------------------------
 * Change: Replace Python linting to ruff
