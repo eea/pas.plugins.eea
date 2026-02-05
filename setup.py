@@ -37,6 +37,9 @@ DATA_EXTENSIONS = {
     ".cfg",
     ".sh",
 }
+DATA_FILENAMES = {
+    ".gitkeep",
+}
 
 
 def get_package_data(package_root):
@@ -47,7 +50,7 @@ def get_package_data(package_root):
     for path in package_dir.rglob("*"):
         if not path.is_file():
             continue
-        if path.suffix in DATA_EXTENSIONS:
+        if path.suffix in DATA_EXTENSIONS or path.name in DATA_FILENAMES:
             files.append(str(path.relative_to(package_dir)))
     return files
 
