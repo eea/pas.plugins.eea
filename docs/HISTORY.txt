@@ -3,6 +3,10 @@ Changelog
 
 1.7-dev0 - (unreleased)
 ---------------------------
+* Fix: Ensure browser and upgrades packages are importable (add missing __init__.py).
+  [dobri1408]
+* Fix: Align setup.py with standard packaging and rely on MANIFEST.in for data files.
+  [dobri1408]
 
 1.6 - (2025-11-18)
 ---------------------------
