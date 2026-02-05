@@ -1,6 +1,9 @@
 Changelog
 =========
 
+1.8-dev0 - (unreleased)
+---------------------------
+
 1.7 - (2026-02-05)
 ---------------------------
 * Fix: Ensure browser and upgrades packages are importable (add missing __init__.py).
