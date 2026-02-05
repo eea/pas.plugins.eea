@@ -1,3 +1,6 @@
+[project.entry-points."z3c.autoinclude.plugin"]
+target = "plone"
+
 [tool.ruff]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
 select = ["E", "F", "I"]
