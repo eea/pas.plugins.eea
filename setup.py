@@ -2,16 +2,12 @@
 
 import os
 from os.path import join
-from pathlib import Path
 
 from setuptools import find_packages
 from setuptools import setup
 
 NAME = "pas.plugins.eea"
-SRC_ROOT = "src"
-HAS_SRC_LAYOUT = os.path.isdir(SRC_ROOT)
-PACKAGE_ROOT = SRC_ROOT if HAS_SRC_LAYOUT else "."
-PATH = ([SRC_ROOT] if HAS_SRC_LAYOUT else []) + NAME.split(".") + ["version.txt"]
+PATH = NAME.split(".") + ["version.txt"]
 VERSION = ""
 with open(join(*PATH), "r", encoding="utf-8") as version_file:
     VERSION = version_file.read().strip()
@@ -22,37 +18,6 @@ with open("README.rst", "r", encoding="utf-8") as readme_file:
 
 with open(os.path.join("docs", "HISTORY.txt"), "r", encoding="utf-8") as hfile:
     LONG_DESCRIPTION += "\n" + hfile.read()
-
-
-DATA_EXTENSIONS = {
-    ".zcml",
-    ".pt",
-    ".xml",
-    ".po",
-    ".pot",
-    ".mo",
-    ".json",
-    ".txt",
-    ".rst",
-    ".cfg",
-    ".sh",
-}
-DATA_FILENAMES = {
-    ".gitkeep",
-}
-
-
-def get_package_data(package_root):
-    package_dir = Path(package_root) / "pas" / "plugins" / "eea"
-    if not package_dir.exists():
-        return []
-    files = []
-    for path in package_dir.rglob("*"):
-        if not path.is_file():
-            continue
-        if path.suffix in DATA_EXTENSIONS or path.name in DATA_FILENAMES:
-            files.append(str(path.relative_to(package_dir)))
-    return files
 
 
 setup(
@@ -87,13 +52,9 @@ setup(
         # 'Documentation': 'https://pas.plugins.eea.readthedocs.io/en/latest/',
     },
     license="GPL version 2",
-    packages=find_packages(PACKAGE_ROOT, exclude=["ez_setup"]),
+    packages=find_packages(exclude=["ez_setup"]),
     namespace_packages=["pas", "pas.plugins"],
-    package_dir={"": PACKAGE_ROOT},
     include_package_data=True,
-    package_data={
-        "pas.plugins.eea": get_package_data(PACKAGE_ROOT),
-    },
     zip_safe=False,
     python_requires=">=3.7",
     install_requires=[
