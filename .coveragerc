@@ -1,6 +1,6 @@
 [report]
 include =
-    pas.plugins/*
+    src/pas.plugins/*
 omit =
     */test*
     */upgrades/*
