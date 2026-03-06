@@ -263,7 +263,8 @@ class EEAEntraPlugin(BasePlugin):
 
         elif id:
             query = id.lower()
-            result = [g for g in self.savedGroups() if query in g["title"].lower()]
+            result = [g for g in self.savedGroups(
+            ) if query in g["title"].lower()]
 
         return result
 
@@ -299,6 +300,8 @@ class EEAEntraPlugin(BasePlugin):
     @security.private
     def getPropertiesForUser(self, user, request=None):
         plugin = get_authomatic_plugin()
+        if not plugin:
+            return None
         found = plugin.getPropertiesForUser(user, request)
         if found:
             found = UserPropertySheet(
