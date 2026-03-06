@@ -263,8 +263,7 @@ class EEAEntraPlugin(BasePlugin):
 
         elif id:
             query = id.lower()
-            result = [g for g in self.savedGroups(
-            ) if query in g["title"].lower()]
+            result = [g for g in self.savedGroups() if query in g["title"].lower()]
 
         return result
 
