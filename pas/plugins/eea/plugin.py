@@ -299,6 +299,8 @@ class EEAEntraPlugin(BasePlugin):
     @security.private
     def getPropertiesForUser(self, user, request=None):
         plugin = get_authomatic_plugin()
+        if not plugin:
+            return None
         found = plugin.getPropertiesForUser(user, request)
         if found:
             found = UserPropertySheet(
