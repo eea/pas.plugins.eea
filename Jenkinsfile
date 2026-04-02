@@ -3,7 +3,7 @@ pipeline {
 
   environment {
         GIT_NAME = "pas.plugins.eea"
-        SONARQUBE_TAGS = "demo-www.eea.europa.eu,www.eea.europa.eu-en,www.eea.europa.eu,insitu.copernicus.eu,clmsdemo.devel6cph.eea.europa.eu,forest.eea.europa.eu,land.copernicus.eu,demo-ied.eea.europa.eu,www.ied.eea.europa.eu-en,climate-advisory-board.europa.eu,demo-water.devel5cph.eea.europa.eu-freshwater,water.europa.eu-freshwater,biodiversity.europa.eu,demo-wise.02pre.eea.europa.eu-marine,water.europa.eu-marine,water.europa.eu-msfd"
+        SONARQUBE_TAGS = "demo-www.eea.europa.eu,www.eea.europa.eu-en,www.eea.europa.eu,insitu.copernicus.eu,clmsdemo.devel6cph.eea.europa.eu,forest.eea.europa.eu,land.copernicus.eu,demo-ied.eea.europa.eu,www.ied.eea.europa.eu-en,climate-advisory-board.europa.eu,demo-water.devel5cph.eea.europa.eu-freshwater,water.europa.eu-freshwater,biodiversity.europa.eu,demo-wise.02pre.eea.europa.eu-marine,water.europa.eu-marine,demo-wise.02pre.eea.europa.eu-msfd"
     }
 
   stages {
